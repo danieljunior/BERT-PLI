@@ -35,9 +35,9 @@ class BertPairTextFormatter(BasicFormatter):
             attention_mask.append(res_dict['input_mask'])
             token_type_ids.append(res_dict['segment_ids'])
             guids.append(temp['guid'])
-
             if mode != 'test':
-                labels.append(res_dict['label_id'])
+                # labels.append(res_dict['label_id'])
+                labels.append(temp['label'])
 
         input_ids = torch.LongTensor(input_ids)
         attention_mask = torch.LongTensor(attention_mask)

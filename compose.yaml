@@ -1,0 +1,19 @@
+version: "3.8"
+
+services:
+  bert-pli:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    image: bert-pli:latest
+    container_name: bert-pli
+    volumes:
+      - ./:/app
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]
+    runtime: nvidia
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all

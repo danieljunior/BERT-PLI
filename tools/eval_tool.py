@@ -55,8 +55,8 @@ def eval_micro_query(_result_list):
         label = int(item[1])
         pred = np.argmax(item[2])
         qid, cid = guid.split('_')
-        if label > 0:
-            label_dict[qid].append(cid)
+        # if label > 0:
+        label_dict[qid].append(cid)
         pred_dict[qid][cid] = pred
     assert (len(pred_dict) == len(label_dict))
 
@@ -110,7 +110,7 @@ def valid(model, dataset, epoch, writer, config, gpu_list, output_function, mode
                     data[key] = Variable(data[key])
 
         results = model(data, config, gpu_list, acc_result, "valid")
-
+        print(results)
         loss, acc_result, output = results["loss"], results["acc_result"], results["output"]
         total_loss += float(loss)
         result = result + output
@@ -141,6 +141,5 @@ def valid(model, dataset, epoch, writer, config, gpu_list, output_function, mode
     loss_tmp = total_loss / (step + 1)
     print('valid set: micro_prec_query=%.4f, micro_recall_query=%.4f, micro_f1_query=%.4f' %
           (micro_prec_query, micro_recall_query, micro_f1_query))
-
     model.train()
     return {'precision': micro_prec_query, 'recall': micro_recall_query, 'f1': micro_f1_query, 'loss': loss_tmp}

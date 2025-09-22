@@ -32,7 +32,6 @@ class BertPoint(nn.Module):
         _, y = self.bert(input_ids, token_type_ids=token_type_ids, attention_mask=attention_mask,
                             output_all_encoded_layers=False)
         y = y.view(y.size()[0], -1)
-
         if mode == 'test' and config.getboolean('output', 'pool_out'):
             output = []
             y = y.cpu().detach().numpy().tolist()
@@ -47,7 +46,11 @@ class BertPoint(nn.Module):
             label = data["label"]
             loss = self.criterion(y, label.view(-1))
             acc_result = self.accuracy_function(y, label, config, acc_result)
-            return {"loss": loss, "acc_result": acc_result}
+            output = []
+            y = y.cpu().detach().numpy().tolist()
+            for i, guid in enumerate(data['guid']):
+                output.append([guid, label[i], y[i]])
+            return {"loss": loss, "acc_result": acc_result, "output": output}
 
         else:
             output = []
