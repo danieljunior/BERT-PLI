@@ -4,11 +4,14 @@ __author__ = 'yshao'
 import json
 import torch
 import os
+import logging
 
 from pytorch_pretrained_bert.tokenization import BertTokenizer
 
 from formatter.Basic import BasicFormatter
 from .bert_feature_tool import example_item_to_feature
+
+logger = logging.getLogger(__name__)
 
 
 class BertPairTextFormatter(BasicFormatter):
@@ -26,9 +29,9 @@ class BertPairTextFormatter(BasicFormatter):
         token_type_ids = []
         if mode != 'test':
             labels = []
-
         for temp in data:
             res_dict = example_item_to_feature(temp, self.max_len, self.tokenizer, self.output_mode,
+                                               mode=mode,
                                                cls_token_at_end=False, pad_on_left=False,
                                                cls_token_segment_id=0, pad_token_segment_id=0)
             input_ids.append(res_dict['input_ids'])
@@ -36,8 +39,7 @@ class BertPairTextFormatter(BasicFormatter):
             token_type_ids.append(res_dict['segment_ids'])
             guids.append(temp['guid'])
             if mode != 'test':
-                # labels.append(res_dict['label_id'])
-                labels.append(temp['label'])
+                labels.append(res_dict['label_id'])
 
         input_ids = torch.LongTensor(input_ids)
         attention_mask = torch.LongTensor(attention_mask)

@@ -73,7 +73,6 @@ def init_one_dataset(config, mode, *args, **params):
                                 num_workers=reader_num,
                                 collate_fn=collate_fn[mode],
                                 drop_last=drop_last)
-
         return dataloader
     else:
         logger.error("There is no dataset called %s, check your config." % which)

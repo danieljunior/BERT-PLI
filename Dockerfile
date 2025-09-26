@@ -9,9 +9,6 @@ RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/
 RUN echo "deb http://archive.debian.org/debian stretch main contrib non-free" > /etc/apt/sources.list && \
     apt-get update && apt-get install -y curl libgomp1
 
-# Install build dependencies
-# RUN apt-get update && apt-get install --no-cache gcc musl-dev libffi-dev
-
 # Copy requirements if you have them
 COPY requirements.txt .
 # RUN curl -O https://download.pytorch.org/whl/torchvision-0.2.0-py2.py3-none-any.whl && \

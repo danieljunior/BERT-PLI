@@ -110,7 +110,6 @@ def valid(model, dataset, epoch, writer, config, gpu_list, output_function, mode
                     data[key] = Variable(data[key])
 
         results = model(data, config, gpu_list, acc_result, "valid")
-        print(results)
         loss, acc_result, output = results["loss"], results["acc_result"], results["output"]
         total_loss += float(loss)
         result = result + output

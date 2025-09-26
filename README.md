@@ -1,5 +1,10 @@
 # BERT-PLI: Modeling Paragraph-Level Interactions for Legal Case Retrieval
 
+
+## Instructions to run in nvidia container
+
+`NV_GPU=0 USER_ID=${USER_ID} GROUP_ID=${GROUP_ID} nvidia-docker run -itd --name bert-pli -v ${PWD}:/app bert-pli:latest tail -f /dev/null`
+
 This repository contains the code for BERT-PLI in our IJCAI-PRICAI 2020 paper: *BERT-PLI: Modeling Paragraph-Level Interactions for Legal Case Retrieval*. 
 
 ## File Outline
