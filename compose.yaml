@@ -9,6 +9,7 @@ services:
     container_name: bert-pli
     volumes:
       - ./:/app
+      - /home/danieljunior/workspace/datasets/jurídicos/COLIEE dataset/:/app/data/COLIEE
     deploy:
       resources:
         reservations:
@@ -17,3 +18,4 @@ services:
     runtime: nvidia
     environment:
       - NVIDIA_VISIBLE_DEVICES=all
+    shm_size: 5gb

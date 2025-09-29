@@ -3,7 +3,16 @@
 
 ## Instructions to run in nvidia container
 
-`NV_GPU=0 USER_ID=${USER_ID} GROUP_ID=${GROUP_ID} nvidia-docker run -itd --name bert-pli -v ${PWD}:/app bert-pli:latest tail -f /dev/null`
+`NV_GPU=0 USER_ID=${USER_ID} GROUP_ID=${GROUP_ID} nvidia-docker run -itd shm_size 5gb --name bert-pli -v ${PWD}:/app bert-pli:latest tail -f /dev/null`
+
+`python3 train.py -c config/nlp/BertPoint.config -g 0`
+
+`python3 poolout.py -c config/nlp/BertPoolOutMax.config -g 0 --checkpoint output/checkpoints/bert_finetuned/1.pkl --result output/checkpoints/pool_out_max`
+
+`python3 poolout_to_train.py -in data/test_paragraphs_processed_data.json -out output/checkpoints/pool_out_max_v1.json --result output/checkpoints/train_poolout.json`
+
+`nohup python3 train.py -c config/nlp/AttenLSTM.config -g 1 &> nohup2.out &`
+
 
 This repository contains the code for BERT-PLI in our IJCAI-PRICAI 2020 paper: *BERT-PLI: Modeling Paragraph-Level Interactions for Legal Case Retrieval*. 
 
