@@ -63,6 +63,7 @@ def pool_out(parameters, config, gpu_list, _outname):
 
         results = model(data, config, gpu_list, acc_result, "poolout")
         result = result + results["output"]
+        logger.info(f"Result: {results}")
         cnt += 1
 
         if step % output_time == 0:

@@ -54,6 +54,7 @@ if __name__ == "__main__":
 
     out_file = open(args.result, 'w', encoding='utf-8')
     outputs = pool_out(parameters, config, gpu_list, args.result)
+    logger.info(f"Total number of outputs: {outputs}")
     for output in outputs:
         tmp_dict = {
             'id_': output[0],

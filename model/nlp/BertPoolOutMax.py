@@ -6,7 +6,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from pytorch_pretrained_bert import BertModel
-
+import logging
+logger = logging.getLogger(__name__)
 
 class BertPoolOutMax(nn.Module):
     def __init__(self, config, gpu_list, *args, **params):
@@ -24,7 +25,6 @@ class BertPoolOutMax(nn.Module):
 
     def forward(self, data, config, gpu_list, acc_result, mode):
         input_ids, attention_mask, token_type_ids = data['input_ids'], data['attention_mask'], data['token_type_ids']
-
         with torch.no_grad():
             output = []
             for k in range(input_ids.size()[0]):

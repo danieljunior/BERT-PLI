@@ -21,6 +21,7 @@ class AttenRNNFormatter(BasicFormatter):
             labels = []
 
         for temp in data:
+            # guid = temp['id_']
             guid = temp['guid']
             emb_mtx = temp['res']
             assert (len(emb_mtx) == self.max_para_q)
