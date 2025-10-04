@@ -2,5 +2,3 @@ tqdm==4.38.0
 pytorch_pretrained_bert==0.6.2
 numpy==1.16.2
 tensorboardX==1.8
-spacy==3.6.1
-ray==2.4.0

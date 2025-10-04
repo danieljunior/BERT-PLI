@@ -3,16 +3,22 @@
 
 ## Instructions to run in nvidia container
 
-`NV_GPU=0 USER_ID=${USER_ID} GROUP_ID=${GROUP_ID} nvidia-docker run -itd shm_size 5gb --name bert-pli -v ${PWD}:/app bert-pli:latest tail -f /dev/null`
+`NV_GPU=5,7 USER_ID=${USER_ID} GROUP_ID=${GROUP_ID} nvidia-docker run -itd --rm --shm-size 5gb --name bert-pli -v ${PWD}:/app bert-pli:latest tail -f /dev/null`
 
 `python3 train.py -c config/nlp/BertPoint.config -g 0`
 
-`python3 poolout.py -c config/nlp/BertPoolOutMax.config -g 0 --checkpoint output/checkpoints/bert_finetuned/1.pkl --result output/checkpoints/pool_out_max`
+`python3 poolout.py -c config/nlp/BertPoolOutMax.config -g 0 --checkpoint output/checkpoints/bert_finetuned/1.pkl --result output/results/pool_out_max.json`
 
-`python3 poolout_to_train.py -in data/test_paragraphs_processed_data.json -out output/checkpoints/pool_out_max_v1.json --result output/checkpoints/train_poolout.json`
+`python3 poolout_to_train.py -in data/test_paragraphs_processed_data.json -out output/results/pool_out_max.json --result output/results/train_poolout.json`
 
 `nohup python3 train.py -c config/nlp/AttenLSTM.config -g 1 &> nohup2.out &`
 
+`python3 test.py -c config/nlp/AttenGRU.config -g 0 --checkpoint output/checkpoints/attengru/59.pkl --result output/results/gru_results.json`
+
+
+`python3 parse_results.py`
+
+`python parse_results.py evaluate data/task1_test_labels_2024.json output/results/gru_parsed_result.json output/results/metrics.json`
 
 This repository contains the code for BERT-PLI in our IJCAI-PRICAI 2020 paper: *BERT-PLI: Modeling Paragraph-Level Interactions for Legal Case Retrieval*. 
 

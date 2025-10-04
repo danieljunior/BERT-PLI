@@ -12,4 +12,5 @@ temp
 notebook
 result
 output/
-
+support/.venv
+qdrant/
