@@ -208,10 +208,14 @@ if __name__ == "__main__":
         output_file = sys.argv[4] if len(sys.argv) > 4 else None
         
         evaluate_predictions(labels_file, predicted_file, output_file)
-    else:
-        # Original GRU parsing mode
-        input_file = "output/results/gru_results.json"
-        output_file = "output/results/gru_parsed_result.json"
+    elif len(sys.argv) > 1 and sys.argv[1] == "parse":
+        if len(sys.argv) < 3:
+            print("Usage: python parse_results.py parse <input.json> <output.json>")
+            sys.exit(1)
+        input_file = sys.argv[2]
+        output_file = sys.argv[3]
+        # input_file = "output/results/gru_results.json"
+        # output_file = "output/results/gru_parsed_result.json"
         
         # Create output directory if it doesn't exist
         os.makedirs(os.path.dirname(output_file), exist_ok=True)

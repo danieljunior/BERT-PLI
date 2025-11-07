@@ -6,6 +6,9 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from pytorch_pretrained_bert import BertModel
+
+from tqdm import tqdm
+
 import logging
 logger = logging.getLogger(__name__)
 
@@ -27,9 +30,9 @@ class BertPoolOutMax(nn.Module):
         input_ids, attention_mask, token_type_ids = data['input_ids'], data['attention_mask'], data['token_type_ids']
         with torch.no_grad():
             output = []
-            for k in range(input_ids.size()[0]):
+            for k in tqdm(range(input_ids.size()[0]), desc="Sentences: ", leave=False):
                 q_lst = []
-                for i in range(0, self.max_para_q, self.step):
+                for i in tqdm(range(0, self.max_para_q, self.step), desc="Steps: ", leave=False):
                     # print(input_ids[k, i:i+self.step].view(-1, self.max_len).size())
                     _, lst = self.bert(input_ids[k, i:i+self.step].view(-1, self.max_len),
                                        token_type_ids=token_type_ids[k, i:i+self.step].view(-1, self.max_len),
