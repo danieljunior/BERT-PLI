@@ -9,19 +9,14 @@ from timeit import default_timer as timer
 
 import torch
 from torch.autograd import Variable
-from torch.optim import lr_scheduler
 from tqdm import tqdm
 
-
 from config_parser import create_config
-
-from reader.reader import init_dataset, init_formatter, init_test_dataset
+from reader.reader import init_formatter, init_test_dataset
 from model import get_model
-from model.optimizer import init_optimizer
-from tools.output_init import init_output_function
 from tools.poolout_tool import load_state_keywise
 from tools.eval_tool import gen_time_str, output_value
-from tools.train_tool import checkpoint
+from parse_results import jsonl_to_collie_format, metrics_from_collie_format
 
 logging.basicConfig(format='%(asctime)s - %(levelname)s - %(name)s -   %(message)s',
                     datefmt='%m/%d/%Y %H:%M:%S',
@@ -97,7 +92,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--config', '-c', help="specific config file", required=True)
     parser.add_argument('--checkpoint', help="checkpoint file path", required=True)
-    parser.add_argument('--result-path', help="result file path", required=True)
+    parser.add_argument('--labels-file', help="file path with labels from coliee", required=True)
+    parser.add_argument('--result-file', help="result file path", required=True)
     parser.add_argument('--gpu', '-g', help="gpu id list")
     
     args = parser.parse_args()
@@ -145,4 +141,16 @@ if __name__ == "__main__":
         gen_time_str(delta_t), gen_time_str(delta_t * (total_len - step - 1) / (step + 1))),
                  "%.3lf" % (total_loss / (step + 1)), output_info, None, config)
     
-    json.dump(result, open(args.result_path, "w", encoding="utf8"), ensure_ascii=False, sort_keys=True, indent=2)
+    raw_results_file = args.result_file.split('.json')[0] + '_raw.json'
+    json.dump(result, open(raw_results_file, "w", encoding="utf8"), ensure_ascii=False, sort_keys=True, indent=2)
+    
+    coliee_result = jsonl_to_collie_format(result)
+    with open(args.labels_file, 'r') as f:
+        predicted = json.load(f)
+    metrics = metrics_from_collie_format(coliee_result, predicted, k_values=[1, 5, 10])
+    logger.info("Evaluation Metrics: %s", json.dumps(metrics, indent=2))
+    
+    os.makedirs(os.path.dirname(args.result_file), exist_ok=True)
+    with open(args.result_file, 'w') as f:
+        json.dump(metrics, f, indent=2, sort_keys=True)
+    print(f"\nResults saved to: {args.result_file}")

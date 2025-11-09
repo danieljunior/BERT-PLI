@@ -1,21 +1,10 @@
 import json
 import os
 
-def parse_gru_results(input_file, output_file):
-    """
-    Parse GRU results and create formatted output based on score comparison.
-    
-    Args:
-        input_file: Path to the input JSON file with GRU results
-        output_file: Path to the output JSON file to create
-    """
-    # Read the input file
-    with open(input_file, 'r') as f:
-        data = json.load(f)
-    
+def jsonl_to_collie_format(jsonl_data):
     result = {}
     
-    for entry in data:
+    for entry in jsonl_data:
         # Skip empty entries
         if not entry or len(entry) != 2:
             continue
@@ -54,6 +43,21 @@ def parse_gru_results(input_file, output_file):
     # Sort the results for consistent output
     for key in result:
         result[key] = sorted(list(set(result[key])))
+    return result
+
+def parse_gru_results(input_file, output_file):
+    """
+    Parse GRU results and create formatted output based on score comparison.
+    
+    Args:
+        input_file: Path to the input JSON file with GRU results
+        output_file: Path to the output JSON file to create
+    """
+    # Read the input file
+    with open(input_file, 'r') as f:
+        data = json.load(f)
+    
+    result = jsonl_to_collie_format(data)
     
     # Write the result to output file
     with open(output_file, 'w') as f:
@@ -62,25 +66,7 @@ def parse_gru_results(input_file, output_file):
     print(f"Parsed {len(data)} entries and created {len(result)} case mappings")
     print(f"Output saved to: {output_file}")
 
-def compute_metrics(labels_file, predicted_file, k_values=[1, 3, 5, 10]):
-    """
-    Compute precision, recall, F1-score and their @k variants.
-    
-    Args:
-        labels_file: Path to the ground truth labels JSON file
-        predicted_file: Path to the predicted results JSON file
-        k_values: List of k values for @k metrics
-    
-    Returns:
-        Dictionary containing all computed metrics
-    """
-    # Load data
-    with open(labels_file, 'r') as f:
-        labels = json.load(f)
-    
-    with open(predicted_file, 'r') as f:
-        predicted = json.load(f)
-    
+def metrics_from_collie_format(labels, predicted, k_values=[1, 3, 5, 10]):
     # Initialize counters
     total_true_positives = 0
     total_predicted = 0
@@ -142,6 +128,29 @@ def compute_metrics(labels_file, predicted_file, k_values=[1, 3, 5, 10]):
         results[f'precision@{k}'] = precision_k
         results[f'recall@{k}'] = recall_k
         results[f'f1_score@{k}'] = f1_k
+    
+    return results
+
+def compute_metrics(labels_file, predicted_file, k_values=[1, 3, 5, 10]):
+    """
+    Compute precision, recall, F1-score and their @k variants.
+    
+    Args:
+        labels_file: Path to the ground truth labels JSON file
+        predicted_file: Path to the predicted results JSON file
+        k_values: List of k values for @k metrics
+    
+    Returns:
+        Dictionary containing all computed metrics
+    """
+    # Load data
+    with open(labels_file, 'r') as f:
+        labels = json.load(f)
+    
+    with open(predicted_file, 'r') as f:
+        predicted = json.load(f)
+    
+    results = metrics_from_collie_format(labels, predicted, k_values)
     
     return results
 

@@ -23,6 +23,12 @@ or
 
 `python parse_results.py evaluate data/task1_test_labels_2024.json output/results/gru_parsed_result.json output/results/gru_metrics.json`
 
+--------------------------------------------------
+
+`python bert_pli_train.py --config config/nlp/BertPLI.config --checkpoint output/checkpoints/bert_finetuned/1.pkl --gpu 0,1`
+
+`python bert_pli_test.py --config config/nlp/BertPLI.config --checkpoint output/checkpoints/bert-pli/4.pkl --labels-file data/valid_labels.json --result-file output/results/tiny-train.json --gpu 0,1`
+
 This repository contains the code for BERT-PLI in our IJCAI-PRICAI 2020 paper: *BERT-PLI: Modeling Paragraph-Level Interactions for Legal Case Retrieval*. 
 
 ## File Outline
