@@ -12,7 +12,6 @@ from torch.autograd import Variable
 from torch.optim import lr_scheduler
 from tqdm import tqdm
 
-from tools.eval_tool import gen_time_str, output_value
 
 from config_parser import create_config
 
@@ -21,6 +20,8 @@ from model import get_model
 from model.optimizer import init_optimizer
 from tools.output_init import init_output_function
 from tools.poolout_tool import load_state_keywise
+from tools.eval_tool import gen_time_str, output_value
+from tools.train_tool import checkpoint
 
 logging.basicConfig(format='%(asctime)s - %(levelname)s - %(name)s -   %(message)s',
                     datefmt='%m/%d/%Y %H:%M:%S',
@@ -121,6 +122,8 @@ if __name__ == "__main__":
     parser.add_argument('--config', '-c', help="specific config file", required=True)
     parser.add_argument('--gpu', '-g', help="gpu id list")
     parser.add_argument('--checkpoint', help="checkpoint file path")
+    parser.add_argument("--output-path", type=str, default="output/checkpoints/bert-pli", help="output path to save checkpoints")
+
     args = parser.parse_args()
 
     config, parameters, gpu_list = init_setup(args)
@@ -142,45 +145,47 @@ if __name__ == "__main__":
     
     logger.info("Training start....")
     print("Epoch  Stage  Iterations  Time Usage    Loss    Output Information")
-
     for epoch_num in range(trained_epoch, epoch):
-            start_time = timer()
-            current_epoch = epoch_num
-            exp_lr_scheduler.step(current_epoch)
+        start_time = timer()
+        current_epoch = epoch_num
+        exp_lr_scheduler.step(current_epoch)
 
-            acc_result = None
-            total_loss = 0
-            output_info = ""
-            step = -1
+        acc_result = None
+        total_loss = 0
+        output_info = ""
+        step = -1
 
-            for step, data in tqdm(enumerate(dataset), desc="Batches", total=len(dataset), ncols=100, leave=False):
+        for step, data in tqdm(enumerate(dataset), desc="Batches", total=len(dataset), ncols=100, leave=False):
 
-                for key in data.keys():
-                    if isinstance(data[key], torch.Tensor):
-                        if len(gpu_list) > 0:
-                            data[key] = Variable(data[key].cuda())
-                        else:
-                            data[key] = Variable(data[key])
+            for key in data.keys():
+                if isinstance(data[key], torch.Tensor):
+                    if len(gpu_list) > 0:
+                        data[key] = Variable(data[key].cuda())
+                    else:
+                        data[key] = Variable(data[key])
 
-                optimizer.zero_grad()
-                
-                results = model(data, config, gpu_list, None, "train")
-                
-                loss, acc_result = results["loss"], results["acc_result"]
-                total_loss += float(loss)
+            optimizer.zero_grad()
+            
+            results = model(data, config, gpu_list, None, "train")
+            
+            loss, acc_result = results["loss"], results["acc_result"]
+            total_loss += float(loss)
 
-                # import pdb; pdb.set_trace()
-                # loss.backward(retain_graph=True)
-                loss.backward()
-                optimizer.step()
-                
-                if step % output_time == 0:
-                    output_info = output_function(acc_result, config)
+            # import pdb; pdb.set_trace()
+            # loss.backward(retain_graph=True)
+            loss.backward()
+            optimizer.step()
+            
+            if step % output_time == 0:
+                output_info = output_function(acc_result, config)
 
-                    delta_t = timer() - start_time
+                delta_t = timer() - start_time
 
-                    output_value(current_epoch, "train", "%d/%d" % (step + 1, total_len), "%s/%s" % (
-                        gen_time_str(delta_t), gen_time_str(delta_t * (total_len - step - 1) / (step + 1))),
-                                "%.3lf" % (total_loss / (step + 1)), output_info, '\r', config)
-                
-                global_step += 1
+                output_value(current_epoch, "train", "%d/%d" % (step + 1, total_len), "%s/%s" % (
+                    gen_time_str(delta_t), gen_time_str(delta_t * (total_len - step - 1) / (step + 1))),
+                            "%.3lf" % (total_loss / (step + 1)), output_info, '\r', config)
+            
+            global_step += 1
+
+        checkpoint(os.path.join(args.output_path, "%d.pkl" % current_epoch), model, optimizer, current_epoch, config,
+                                global_step)
