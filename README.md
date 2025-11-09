@@ -5,6 +5,10 @@
 
 `NV_GPU=5,7 USER_ID=${USER_ID} GROUP_ID=${GROUP_ID} nvidia-docker run -itd --rm --shm-size 5gb --name bert-pli -v ${PWD}:/app bert-pli:latest tail -f /dev/null`
 
+or
+
+`USER_ID=${USER_ID} GROUP_ID=${GROUP_ID} docker run -itd --rm --shm-size 5gb --name bert-pli --runtime nvidia -e NVIDIA_VISIBLE_DEVICES=7 -v ${PWD}:/app bert-pli:latest tail -f /dev/null`
+
 `python3 train.py -c config/nlp/BertPoint.config -g 0`
 
 `python3 poolout.py -c config/nlp/BertPoolOutMax.config -g 0 --checkpoint output/checkpoints/bert_finetuned/1.pkl --result output/results/pool_out_max.json`

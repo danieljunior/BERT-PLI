@@ -23,9 +23,9 @@ class BertPLI(nn.Module):
                                     gpu_list, acc_result, mode)
         poolout = {guid: result for guid, result in poolout['output']}
         rnn_input = self.poolout_to_train(poolout, data['label'], mode=mode)
-        import pdb; pdb.set_trace()
         result = self.attention_rnn(rnn_input, self.attention_rnn_config(config), gpu_list, acc_result, mode)
-    
+        return result
+
     def init_multi_gpu(self, device, config, *args, **params):
         self.poolout_max.init_multi_gpu(device, config, *args, **params)
         # self.attention_rnn.init_multi_gpu(device, config, *args, **params)

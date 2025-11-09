@@ -5,15 +5,16 @@ import argparse
 import os
 import json
 import logging
+from timeit import default_timer as timer
 
 import torch
 from torch.autograd import Variable
+from torch.optim import lr_scheduler
 from tqdm import tqdm
 
-from tools.init_tool import init_all
-from tools.poolout_tool import pool_out
+from tools.eval_tool import gen_time_str, output_value
+
 from config_parser import create_config
-from model.nlp.BertPLI import BertPLI
 
 from reader.reader import init_dataset, init_formatter, init_test_dataset
 from model import get_model
@@ -123,30 +124,63 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     config, parameters, gpu_list = init_setup(args)
+
     model = parameters['model']
     dataset = parameters['train_dataset']
-    result = []
-    for step, data in tqdm(enumerate(dataset), desc="Training", total=len(dataset), ncols=100, leave=False):
+    epoch = config.getint("train", "epoch")
+    trained_epoch = parameters["trained_epoch"] + 1
+    optimizer = parameters["optimizer"]
+    step_size = config.getint("train", "step_size")
+    gamma = config.getfloat("train", "lr_multiplier")
+    output_function = parameters["output_function"]
+    output_time = config.getint("output", "output_time")
+    global_step = parameters["global_step"]
+    total_len = len(dataset)
+    
+    exp_lr_scheduler = lr_scheduler.StepLR(optimizer, step_size=step_size, gamma=gamma)
+    exp_lr_scheduler.step(trained_epoch)
+    
+    logger.info("Training start....")
+    print("Epoch  Stage  Iterations  Time Usage    Loss    Output Information")
 
-        for key in data.keys():
-            if isinstance(data[key], torch.Tensor):
-                if len(gpu_list) > 0:
-                    data[key] = Variable(data[key].cuda())
-                else:
-                    data[key] = Variable(data[key])
+    for epoch_num in range(trained_epoch, epoch):
+            start_time = timer()
+            current_epoch = epoch_num
+            exp_lr_scheduler.step(current_epoch)
 
-        results = model(data, config, gpu_list, None, "train")
-        result = result + results["output"]
-        # logger.info(f"Result: {results}")
-    # outputs = pool_out(parameters, config, gpu_list, args.result)
-    # logger.info(f"Total number of outputs: {outputs}")
-    # for output in outputs:
-    #     tmp_dict = {
-    #         'id_': output[0],
-    #         'res': output[1]
-    #     }
-    #     out_line = json.dumps(tmp_dict, ensure_ascii=False) + '\n'
-    #     out_file.write(out_line)
-    # out_file.close()
+            acc_result = None
+            total_loss = 0
+            output_info = ""
+            step = -1
 
-    # train(parameters, config, gpu_list)
+            for step, data in tqdm(enumerate(dataset), desc="Batches", total=len(dataset), ncols=100, leave=False):
+
+                for key in data.keys():
+                    if isinstance(data[key], torch.Tensor):
+                        if len(gpu_list) > 0:
+                            data[key] = Variable(data[key].cuda())
+                        else:
+                            data[key] = Variable(data[key])
+
+                optimizer.zero_grad()
+                
+                results = model(data, config, gpu_list, None, "train")
+                
+                loss, acc_result = results["loss"], results["acc_result"]
+                total_loss += float(loss)
+
+                # import pdb; pdb.set_trace()
+                # loss.backward(retain_graph=True)
+                loss.backward()
+                optimizer.step()
+                
+                if step % output_time == 0:
+                    output_info = output_function(acc_result, config)
+
+                    delta_t = timer() - start_time
+
+                    output_value(current_epoch, "train", "%d/%d" % (step + 1, total_len), "%s/%s" % (
+                        gen_time_str(delta_t), gen_time_str(delta_t * (total_len - step - 1) / (step + 1))),
+                                "%.3lf" % (total_loss / (step + 1)), output_info, '\r', config)
+                
+                global_step += 1

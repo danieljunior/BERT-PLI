@@ -30,9 +30,9 @@ class BertPoolOutMax(nn.Module):
         input_ids, attention_mask, token_type_ids = data['input_ids'], data['attention_mask'], data['token_type_ids']
         with torch.no_grad():
             output = []
-            for k in tqdm(range(input_ids.size()[0]), desc="Sentences: ", leave=False):
+            for k in tqdm(range(input_ids.size()[0]), desc="Pairs: ", leave=False):
                 q_lst = []
-                for i in tqdm(range(0, self.max_para_q, self.step), desc="Steps: ", leave=False):
+                for i in tqdm(range(0, self.max_para_q, self.step), desc="Interactions: ", leave=False):
                     # print(input_ids[k, i:i+self.step].view(-1, self.max_len).size())
                     _, lst = self.bert(input_ids[k, i:i+self.step].view(-1, self.max_len),
                                        token_type_ids=token_type_ids[k, i:i+self.step].view(-1, self.max_len),
