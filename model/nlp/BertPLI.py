@@ -47,6 +47,6 @@ class BertPLI(nn.Module):
         inputs = torch.tensor(inputs)
 
         if mode != 'test':
-            return {'guid': guids, 'input': inputs.cuda(), 'label': data['labels'].cuda()}
+            return {'guid': guids, 'input': inputs.cuda(), 'label': data['label'].cuda()}
         else:
             return {'guid': guids, 'input': inputs.cuda()}
