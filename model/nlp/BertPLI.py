@@ -22,7 +22,8 @@ class BertPLI(nn.Module):
         poolout = self.poolout_max(data, self.poolout_config(config),
                                     gpu_list, acc_result, mode)
         poolout = {guid: result for guid, result in poolout['output']}
-        rnn_input = self.poolout_to_rnn(poolout, mode=mode)
+        labels = data['label'] if mode != 'test' else []
+        rnn_input = self.poolout_to_rnn(poolout, labels, mode=mode)
         result = self.attention_rnn(rnn_input, self.attention_rnn_config(config), gpu_list, acc_result, mode)
         return result
 
@@ -36,7 +37,7 @@ class BertPLI(nn.Module):
     def attention_rnn_config(self, config):
         return create_config(config.get('attention_rnn', 'config_file'))
     
-    def poolout_to_rnn(self, data, mode="train"):
+    def poolout_to_rnn(self, data, labels, mode="train"):
         inputs = []
         guids = []
 
@@ -47,6 +48,6 @@ class BertPLI(nn.Module):
         inputs = torch.tensor(inputs)
 
         if mode != 'test':
-            return {'guid': guids, 'input': inputs.cuda(), 'label': data['label'].cuda()}
+            return {'guid': guids, 'input': inputs.cuda(), 'label': labels.cuda()}
         else:
             return {'guid': guids, 'input': inputs.cuda()}
