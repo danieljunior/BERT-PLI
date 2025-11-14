@@ -3,10 +3,12 @@ import logging
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from torch.autograd import Variable
 from config_parser import create_config
 
 from model.nlp.BertPoolOutMax import BertPoolOutMax
 from model.nlp.AttenRNN import AttentionRNN
+from formatter.nlp.BertDocParaFormatter import BertDocParaFormatter
 
 logger = logging.getLogger(__name__)
 
@@ -19,6 +21,7 @@ class BertPLI(nn.Module):
                                         gpu_list, *args, **params)
 
     def forward(self, data, config, gpu_list, acc_result, mode):
+        data = self.tokenize_data(data, config, gpu_list, acc_result, mode)
         poolout = self.poolout_max(data, self.poolout_config(config),
                                     gpu_list, acc_result, mode)
         poolout = {guid: result for guid, result in poolout['output']}
@@ -30,6 +33,21 @@ class BertPLI(nn.Module):
     def init_multi_gpu(self, device, config, *args, **params):
         self.poolout_max.init_multi_gpu(device, config, *args, **params)
         # self.attention_rnn.init_multi_gpu(device, config, *args, **params)
+    
+    def set_tokenizer_formatter(self, mode, config, *args, **params):
+        self.tokenizer_formatter = BertDocParaFormatter(config, mode, *args, **params)
+
+    def tokenize_data(self, data, config, gpu_list, acc_result, mode):
+        data = self.tokenizer_formatter.process(data, config, gpu_list, acc_result, mode)
+        
+        for key in data.keys():
+            if isinstance(data[key], torch.Tensor):
+                if len(gpu_list) > 0:
+                    data[key] = Variable(data[key].cuda())
+                else:
+                    data[key] = Variable(data[key])
+        
+        return data
 
     def poolout_config(self, config):
         return create_config(config.get('poolout', 'config_file'))
