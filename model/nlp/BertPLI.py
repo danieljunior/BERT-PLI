@@ -6,9 +6,12 @@ import torch.nn.functional as F
 from torch.autograd import Variable
 from config_parser import create_config
 
+from formatter.nlp.BertDocParaFormatter import BertDocParaFormatter
 from model.nlp.BertPoolOutMax import BertPoolOutMax
 from model.nlp.AttenRNN import AttentionRNN
-from formatter.nlp.BertDocParaFormatter import BertDocParaFormatter
+from model.nlp.BypassSelection import BypassSelection
+from model.nlp.SumySelection import SumySelection
+from model.nlp.LearnableSequenceSelector import LearnableSequenceSelector
 
 logger = logging.getLogger(__name__)
 
@@ -21,6 +24,7 @@ class BertPLI(nn.Module):
                                         gpu_list, *args, **params)
 
     def forward(self, data, config, gpu_list, acc_result, mode):
+        data = self.selection_layer.forward(data)
         data = self.tokenize_data(data, config, gpu_list, acc_result, mode)
         poolout = self.poolout_max(data, self.poolout_config(config),
                                     gpu_list, acc_result, mode)
@@ -48,6 +52,17 @@ class BertPLI(nn.Module):
                     data[key] = Variable(data[key])
         
         return data
+
+    def set_selection_layer(self, selection_mode):
+        self.selection_layer = BypassSelection()
+        if selection_mode == 'sumy':
+            self.selection_layer = SumySelection()
+        elif selection_mode == 'learnable':
+            selection_layer_ = LearnableSequenceSelector(
+                                    embed_dim=512,
+                                    num_heads=2,
+                                    num_to_select=20)
+            self.add_module("selection_layer", selection_layer_)
 
     def poolout_config(self, config):
         return create_config(config.get('poolout', 'config_file'))

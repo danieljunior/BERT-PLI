@@ -33,7 +33,9 @@ def init_parameters(config, gpu_list, checkpoint, mode, *args, **params):
 
     logger.info("Begin to initialize models...")
     model = get_model(config.get("model", "model_name"))(config, gpu_list, *args, **params)
-
+    model.set_tokenizer_formatter(mode, config, *args, **params)
+    model.set_selection_layer(config.get("model", "selection_mode"))
+    
     if len(gpu_list) > 0:
         model = model.cuda()
 
@@ -116,14 +118,6 @@ if __name__ == "__main__":
     result = []
 
     for step, data in tqdm(enumerate(dataset), desc="Batches", total=len(dataset), ncols=100, leave=False):
-
-        for key in data.keys():
-            if isinstance(data[key], torch.Tensor):
-                if len(gpu_list) > 0:
-                    data[key] = Variable(data[key].cuda())
-                else:
-                    data[key] = Variable(data[key])
-
         results = model(data, config, gpu_list, acc_result, "test")
         result = result + results["output"]
         cnt += 1
