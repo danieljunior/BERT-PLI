@@ -22,13 +22,14 @@ class BertPLI(nn.Module):
                                             gpu_list, *args, **params)        
         self.attention_rnn = AttentionRNN(self.attention_rnn_config(config),
                                         gpu_list, *args, **params)
+        self.selection_mode = None
 
     def forward(self, data, config, gpu_list, acc_result, mode):
-        data = self.selection_layer.forward(data)
+        data = self.select_sentences(data, config, gpu_list, acc_result, mode)
         data = self.tokenize_data(data, config, gpu_list, acc_result, mode)
         poolout = self.poolout_max(data, self.poolout_config(config),
                                     gpu_list, acc_result, mode)
-        poolout = {guid: result for guid, result in poolout['output']}
+        poolout = { guid: result for guid, result in poolout['output'] }
         labels = data['label'] if mode != 'test' else []
         rnn_input = self.poolout_to_rnn(poolout, labels, mode=mode)
         result = self.attention_rnn(rnn_input, self.attention_rnn_config(config), gpu_list, acc_result, mode)
@@ -54,15 +55,17 @@ class BertPLI(nn.Module):
         return data
 
     def set_selection_layer(self, selection_mode):
-        self.selection_layer = BypassSelection()
+        self.selection_mode = selection_mode
         if selection_mode == 'sumy':
             self.selection_layer = SumySelection()
         elif selection_mode == 'learnable':
             selection_layer_ = LearnableSequenceSelector(
-                                    embed_dim=512,
-                                    num_heads=2,
+                                    embed_dim=768,
+                                    num_heads=1,
                                     num_to_select=20)
             self.add_module("selection_layer", selection_layer_)
+        else:
+            self.selection_layer = BypassSelection()
 
     def poolout_config(self, config):
         return create_config(config.get('poolout', 'config_file'))
@@ -70,6 +73,38 @@ class BertPLI(nn.Module):
     def attention_rnn_config(self, config):
         return create_config(config.get('attention_rnn', 'config_file'))
     
+    def select_sentences(self, data, config, gpu_list, acc_result, mode):
+        if self.selection_mode == 'learnable':
+            c_paras = [d['c_paras'] for d in data]
+            q_paras = [d['q_paras'] for d in data]
+            selected_c_paras = self._select_sentences_one_text(c_paras)
+            for doc, sel in zip(data, selected_c_paras):
+                doc['c_paras'] = sel
+
+            selected_q_paras = self._select_sentences_one_text(q_paras)
+            for doc, sel in zip(data, selected_q_paras):
+                doc['q_paras'] = sel
+        else:
+            data = self.selection_layer.forward(data)
+    
+        return data
+
+    def _select_sentences_one_text(self, paras):
+        selected_sequences, selection_indices, scores = self.selection_layer.forward(paras)
+            # convert tensor indices to plain python lists if needed
+        if isinstance(selection_indices, torch.Tensor):
+            selection_indices = selection_indices.cpu().detach().tolist()
+
+        # selection_indices is now a list (per-doc) of indices to keep
+        selected_paras = []
+        for paras, idxs in zip(paras, selection_indices):
+            # ensure idxs is a list
+            if isinstance(idxs, int):
+                idxs = [idxs]
+            selected = [paras[i] for i in idxs if i < len(paras)] # eu faço padding, então pode retornar índices fora do alcance
+            selected_paras.append(selected)
+        return selected_paras
+
     def poolout_to_rnn(self, data, labels, mode="train"):
         inputs = []
         guids = []

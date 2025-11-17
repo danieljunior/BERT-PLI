@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
-
+from model.nlp.MultiHeadAttention import MultiHeadAttention
+from pytorch_pretrained_bert import BertTokenizer, BertModel, BertForMaskedLM
 
 class LearnableSequenceSelector(nn.Module):
     """
@@ -15,11 +16,11 @@ class LearnableSequenceSelector(nn.Module):
 
         self.num_to_select = num_to_select
 
+        self.tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
+        self.bert_model = BertModel.from_pretrained('bert-base-uncased')
+        self.bert_model.eval()  # Coloca o modelo BERT em modo de avaliação
         # Mecanismo de pontuação baseado em auto-atenção para capturar relações contextuais
-        self.attention = nn.MultiheadAttention(embed_dim, num_heads, batch_first=True)
-        # self.attention = CustomMultiHeadAttention(embed_dim, embed_dim, embed_dim,
-                                                  # embed_dim, num_heads,
-                                                  # dropout=dropout, bias=bias)
+        self.attention = MultiHeadAttention(embed_dim, num_heads, dropout=dropout, bias=bias)
 
         # Camada linear para projetar a saída da atenção em um score escalar para cada sequência
         self.score_projector = nn.Linear(embed_dim, 1)
@@ -37,6 +38,7 @@ class LearnableSequenceSelector(nn.Module):
             - selection_indices (torch.Tensor): Índices das sequências selecionadas.
             - scores (torch.Tensor): Scores brutos gerados para cada sequência (usado na loss).
         """
+        x = self.process_data(x)
         # 1. Gerar scores usando auto-atenção
         attn_output, _ = self.attention(x, x, x)
         # attn_output = self.attention(x, x, x)
@@ -61,3 +63,67 @@ class LearnableSequenceSelector(nn.Module):
         selected_sequences = x[batch_indices, selection_indices]
 
         return selected_sequences, selection_indices, scores
+    
+    def process_data(self, data):
+        """
+        Processa os dados de entrada para garantir que estejam no formato correto.
+
+        Args:
+            data (torch.Tensor): Tensor de entrada com shape [batch_size, num_sequences, embed_dim].
+
+        Returns:
+            torch.Tensor: Tensor processado.
+        """
+        res = []
+        for example in data:
+            tokens_ids, segments_ids = self.tokenize_paras(example)
+            embs = self.get_embeddings(tokens_ids, segments_ids)
+            res.append(embs)
+        return torch.stack(res).to('cuda')  # Shape: [batch_size, num_paras, embed_dim]
+    
+    def tokenize_paras(self, paras):
+        c_tokens = []
+        c_segments = []
+        for segment in paras:
+            tokenized = self.tokenizer.tokenize(segment)
+            tokenized = ['[CLS]'] + self.tokenizer.tokenize(segment)
+            tokens_ids = self.tokenizer.convert_tokens_to_ids(tokenized)[:512]
+            pad_len = 512 - len(tokens_ids)
+            if pad_len > 0:
+                tokens_ids += [0] * pad_len
+            segments_ids = [0] * 512
+            c_tokens.append(tokens_ids)
+            c_segments.append(segments_ids)
+
+        if len(c_tokens) > 200:
+            c_tokens = c_tokens[:200]
+            c_segments = c_segments[:200]
+        elif len(c_tokens) < 200:
+            pad_len = 200 - len(c_tokens)
+            zero_tensor = [0.0] * 512
+            for _ in range(pad_len):
+                c_tokens.append(zero_tensor)
+                c_segments.append(zero_tensor)
+        return torch.tensor(c_tokens), torch.tensor(c_segments)
+    
+    def get_embeddings(self, tokens, segments):
+        res = []
+        for tokens_tensor, segments_tensors in zip(tokens, segments):
+            with torch.no_grad():
+                encoded_layers, _ = self.bert_model(tokens_tensor.unsqueeze(0).long().to('cuda'), segments_tensors.unsqueeze(0).long().to('cuda'))
+            # Sum the CLS token (first token) from the last 4 layers into a single vector.
+            last_four = encoded_layers[-4:]
+            if last_four[0].dim() == 3:
+                # shape (batch, seq_len, hidden) -> take batch 0, token 0
+                cls_vectors = [layer[0, 0, :] for layer in last_four]
+            elif last_four[0].dim() == 2:
+                # shape (seq_len, hidden) -> take token 0
+                cls_vectors = [layer[0, :] for layer in last_four]
+            else:
+                raise RuntimeError(f"Unexpected encoded_layer shape: {last_four[0].shape}")
+
+            # Sum across the four layers and keep a batch-like dim so .squeeze(0) works later
+            embeddings = torch.stack(cls_vectors, dim=0).sum(dim=0).unsqueeze(0)
+            res.append(embeddings.detach().cpu())
+        
+        return torch.stack(res).squeeze(1)  # Shape: [num_paras, embed_dim]
