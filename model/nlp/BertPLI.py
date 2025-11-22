@@ -25,7 +25,7 @@ class BertPLI(nn.Module):
         self.selection_mode = None
 
     def forward(self, data, config, gpu_list, acc_result, mode):
-        data = self.select_sentences(data, config, gpu_list, acc_result, mode)
+        data = self.select_segments(data, config, gpu_list, acc_result, mode)
         data = self.tokenize_data(data, config, gpu_list, acc_result, mode)
         poolout = self.poolout_max(data, self.poolout_config(config),
                                     gpu_list, acc_result, mode)
@@ -73,15 +73,15 @@ class BertPLI(nn.Module):
     def attention_rnn_config(self, config):
         return create_config(config.get('attention_rnn', 'config_file'))
     
-    def select_sentences(self, data, config, gpu_list, acc_result, mode):
+    def select_segments(self, data, config, gpu_list, acc_result, mode):
         if self.selection_mode == 'learnable':
             c_paras = [d['c_paras'] for d in data]
             q_paras = [d['q_paras'] for d in data]
-            selected_c_paras = self._select_sentences_one_text(c_paras)
+            selected_c_paras = self._select_segments_one_text(c_paras)
             for doc, sel in zip(data, selected_c_paras):
                 doc['c_paras'] = sel
 
-            selected_q_paras = self._select_sentences_one_text(q_paras)
+            selected_q_paras = self._select_segments_one_text(q_paras)
             for doc, sel in zip(data, selected_q_paras):
                 doc['q_paras'] = sel
         else:
@@ -89,7 +89,7 @@ class BertPLI(nn.Module):
     
         return data
 
-    def _select_sentences_one_text(self, paras):
+    def _select_segments_one_text(self, paras):
         selected_sequences, selection_indices, scores = self.selection_layer.forward(paras)
             # convert tensor indices to plain python lists if needed
         if isinstance(selection_indices, torch.Tensor):
