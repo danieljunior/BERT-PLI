@@ -1,6 +1,7 @@
 # FROM python:3.6-slim
 FROM pure/python:3.6-cuda10.0-cudnn7-runtime
 
+ENV DFA_URL="http://dfanalyzer:22000/"
 # Set working directory
 WORKDIR /app
 RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/3bf863cc.pub && \ 

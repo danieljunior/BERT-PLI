@@ -1,0 +1,7 @@
+.env/
+.vscode/
+__pycache__/
+docs/
+build/
+dfa_lib_python.egg-info/
+dist/

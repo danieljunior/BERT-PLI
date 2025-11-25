@@ -1,0 +1,12 @@
+site_name: dfa_lib_python
+docs_dir: docs
+site_dir: site
+theme:
+  name: material
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          setup_commands:
+            - import sys, os; sys.path.insert(0, os.path.abspath('.'))
