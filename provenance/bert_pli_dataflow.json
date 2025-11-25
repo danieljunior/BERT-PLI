@@ -486,6 +486,10 @@
                         {
                             "name": "type",
                             "type": "TEXT"
+                        },
+                        {
+                            "name": "value",
+                            "type": "NUMERIC"
                         }
                     ],
                     "type": "OUTPUT"

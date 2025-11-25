@@ -32,6 +32,18 @@ class DfanalyzerService:
         except Exception as ex:
             print(f"Erro ao enviar dataflow: {ex}")
 
+    def register_task(self, json_path: str):
+        df = json.dumps(json.loads(Path(json_path).read_text()))
+
+        try:
+            requests.post(
+                f"http://{self.host}:{self.port}/pde/task/json",
+                data=df,
+                headers=self.HEADERS,
+            )
+        except Exception as ex:
+            print(f"Erro ao enviar tarefa: {ex}")
+
     def e(self, dt, num_msg, num_elements):
         """
         Envia mensagens com elementos de dados para um servidor local.
@@ -145,4 +157,5 @@ if __name__ == "__main__":
     # num_elements = num_msg
     dfanalyzer = DfanalyzerService()
     # dfanalyzer.e(dt, num_msg, num_elements)
-    dfanalyzer.create_dataflow("./provenance/bert_pli_dataflow.json")
+    # dfanalyzer.create_dataflow("./provenance/bert_pli_dataflow.json")
+    dfanalyzer.register_task("./provenance/bert_pli_restrospective_provenance.json")
