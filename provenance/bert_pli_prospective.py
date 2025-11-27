@@ -56,13 +56,13 @@ def create_bert_pli_dataflow(dataflow_tag="bert-pli3"):
     ])
     tf3_input.dependency = tf2._tag
     tf3_output1 = Set("doc1_segment", SetType.OUTPUT, [
-        Attribute("id", AttributeType.TEXT),
+        Attribute("file_id", AttributeType.TEXT),
         Attribute("filepath", AttributeType.FILE),
         Attribute("text", AttributeType.TEXT),
         Attribute("seq", AttributeType.NUMERIC)
     ])
     tf3_output2 = Set("doc2_segment", SetType.OUTPUT, [
-        Attribute("id", AttributeType.TEXT),
+        Attribute("file_id", AttributeType.TEXT),
         Attribute("filepath", AttributeType.FILE),
         Attribute("text", AttributeType.TEXT),
         Attribute("seq", AttributeType.NUMERIC)
@@ -76,14 +76,14 @@ def create_bert_pli_dataflow(dataflow_tag="bert-pli3"):
     # Transformation 4: doc1_relevant_segments_selection
     tf4 = Transformation("doc1_relevant_segments_selection")
     tf4_input = Set("doc1_segment", SetType.INPUT, [
-        Attribute("id", AttributeType.TEXT),
+        Attribute("file_id", AttributeType.TEXT),
         Attribute("filepath", AttributeType.FILE),
         Attribute("text", AttributeType.TEXT),
         Attribute("seq", AttributeType.NUMERIC)
     ])
-    tf4_input.dependency = tf3._tag
+    tf4_input.dependency = tf3_output1._tag
     tf4_output = Set("doc1_relevant_segment", SetType.OUTPUT, [
-        Attribute("id", AttributeType.TEXT),
+        Attribute("file_id", AttributeType.TEXT),
         Attribute("text", AttributeType.TEXT),
         Attribute("seq", AttributeType.NUMERIC),
         Attribute("epoch", AttributeType.NUMERIC)
@@ -94,14 +94,14 @@ def create_bert_pli_dataflow(dataflow_tag="bert-pli3"):
     # Transformation 5: doc2_relevant_segments_selection
     tf5 = Transformation("doc2_relevant_segments_selection")
     tf5_input = Set("doc2_segment", SetType.INPUT, [
-        Attribute("id", AttributeType.TEXT),
+        Attribute("file_id", AttributeType.TEXT),
         Attribute("text", AttributeType.TEXT),
         Attribute("seq", AttributeType.NUMERIC),
         Attribute("epoch", AttributeType.NUMERIC)
     ])
-    tf5_input.dependency = tf3._tag
+    tf5_input.dependency = tf3_output2._tag
     tf5_output = Set("doc2_relevant_segment", SetType.OUTPUT, [
-        Attribute("id", AttributeType.TEXT),
+        Attribute("file_id", AttributeType.TEXT),
         Attribute("text", AttributeType.TEXT),
         Attribute("seq", AttributeType.NUMERIC),
         Attribute("epoch", AttributeType.NUMERIC)
@@ -112,14 +112,14 @@ def create_bert_pli_dataflow(dataflow_tag="bert-pli3"):
     # Transformation 6: bert_scores_calculation
     tf6 = Transformation("bert_scores_calculation")
     tf6_input1 = Set("doc1_relevant_segment", SetType.INPUT, [
-        Attribute("id", AttributeType.TEXT),
+        Attribute("file_id", AttributeType.TEXT),
         Attribute("text", AttributeType.TEXT),
         Attribute("seq", AttributeType.NUMERIC),
         Attribute("epoch", AttributeType.NUMERIC)
     ])
     tf6_input1.dependency = tf4._tag
     tf6_input2 = Set("doc2_relevant_segment", SetType.INPUT, [
-        Attribute("id", AttributeType.TEXT),
+        Attribute("file_id", AttributeType.TEXT),
         Attribute("text", AttributeType.TEXT),
         Attribute("seq", AttributeType.NUMERIC),
         Attribute("epoch", AttributeType.NUMERIC)
@@ -174,7 +174,7 @@ def create_bert_pli_dataflow(dataflow_tag="bert-pli3"):
     tf9_input2 = Set("label", SetType.INPUT, [
         Attribute("value", AttributeType.NUMERIC)
     ])
-    tf9_input2.dependency = tf3._tag
+    tf9_input2.dependency = tf3_output3._tag
     tf9_output = Set("metric", SetType.OUTPUT, [
         Attribute("type", AttributeType.TEXT),
         Attribute("value", AttributeType.NUMERIC)

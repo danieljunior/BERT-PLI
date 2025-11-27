@@ -46,7 +46,11 @@ PRIMEIRO_NUMERO = 5
 SEGUNDO_NUMERO = 1
 t1_output= DataSet("oExtrairNumeros", [Element([PRIMEIRO_NUMERO, SEGUNDO_NUMERO])])
 t1.add_dataset(t1_output)
+t1.save()
+t1_output= DataSet("oExtrairNumeros", [Element([SEGUNDO_NUMERO, PRIMEIRO_NUMERO])])
+t1.add_dataset(t1_output)
 t1.end()
+
 time.sleep(5)
 t2 = Task(2, dataflow_tag, "ExecutarSoma", dependency=t1)
 t2.begin()

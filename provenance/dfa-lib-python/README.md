@@ -1,9 +1,6 @@
 Dataflow Analyzer Python Library
 ===============================
 
-Please refer to: https://github.com/UFFeScience/DfAnalyzer
-
-===============================
 version number: 1.0.0
 author: Vinícius Campos
 

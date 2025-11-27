@@ -5,7 +5,7 @@
 
 - Start dfanalyzer container
 
-`docker run -it --name dfanalyzer -p 22000:22000 dfanalyzer`
+`docker run -it --name dfanalyzer -p 22000:22000 -p 50000:50000 dfanalyzer`
 
 - Start bert-pli container
     - `USER_ID=${USER_ID} GROUP_ID=${GROUP_ID} docker run -itd --rm --shm-size 5gb --name bert-pli --runtime nvidia -e NVIDIA_VISIBLE_DEVICES=7 -v ${PWD}:/app --link dfanalyzer:dfanalyzer bert-pli:latest tail -f /dev/null`
