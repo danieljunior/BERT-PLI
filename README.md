@@ -8,7 +8,7 @@
 `docker run -it --name dfanalyzer -p 22000:22000 -p 50000:50000 dfanalyzer`
 
 - Start bert-pli container
-    - `USER_ID=${USER_ID} GROUP_ID=${GROUP_ID} docker run -itd --rm --shm-size 5gb --name bert-pli --runtime nvidia -e NVIDIA_VISIBLE_DEVICES=7 -v ${PWD}:/app --link dfanalyzer:dfanalyzer bert-pli:latest tail -f /dev/null`
+    - `USER_ID=${USER_ID} GROUP_ID=${GROUP_ID} docker run -itd --shm-size 5gb --name bert-pli --runtime nvidia -e NVIDIA_VISIBLE_DEVICES=7 -e DFA_URL=http://dfanalyzer:22000/ -v ${PWD}:/app -v /home/danieljunior/workspace/datasets/jurídicos/COLIEE\ dataset:/app/data --link dfanalyzer:dfanalyzer bert-pli:latest tail -f /dev/null`
 
     - `NV_GPU=5,7 USER_ID=${USER_ID} GROUP_ID=${GROUP_ID} nvidia-docker run -itd --rm --shm-size 5gb --name bert-pli -v ${PWD}:/app bert-pli:latest tail -f /dev/null`
 

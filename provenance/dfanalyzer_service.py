@@ -1,161 +1,84 @@
-import requests
-import time
-from pathlib import Path
-import json
-from tqdm import tqdm
 
-
+from typing import List
+from dfa_lib_python.task import Task
+from dfa_lib_python.dataset import DataSet
+from dfa_lib_python.element import Element
+import provenance.bert_pli_prospective as prospective
+from .bert_pli_retrospective import add_n_elements
 class DfanalyzerService:
-    HOST = "dfanalyzer"
-    PORT = 22000
-    HEADERS = {"Content-type": "application/json"}
 
-    def __init__(self, host=HOST, port=PORT):
-        self.host = host
-        self.port = port
+    def __init__(self, dataflow_name: str, shift_task_id: int = 0):
+        self.dataflow_name = dataflow_name
+        self.shift_task_id = shift_task_id
+        self.dataflow = None
+        self.dependencies = {}
 
-    def create_dataflow(self, json_path: str):
-        """
-        Cria um dataflow no servidor local a partir de um arquivo JSON.
+    def create_dataflow(self):
+        self.dataflow = prospective.create_bert_pli_dataflow(dataflow_tag=self.dataflow_name)
+        self.dataflow.save()
 
-        Args:
-            json_path: Caminho para o arquivo JSON do dataflow
-        """
-        df = json.dumps(json.loads(Path(json_path).read_text()))
+    def set_docs_pairs_generation_task(self, config, split):
+        input_file = config.get("data", split + "_coliee_file")
+        output_file = config.get("data", split + "_data_path") + "/" + \
+                        config.get("data", split + "_file_list")
+        split_method = config.get("data", split + "_split_method")
+        split_level = config.get("data", split + "_split_level")
+        count = 0
+        with open(output_file, 'r') as f:
+            count = sum(1 for line in f)
 
-        try:
-            requests.post(
-                f"http://{self.host}:{self.port}/pde/dataflow/json",
-                data=df,
-                headers=self.HEADERS,
-            )
-        except Exception as ex:
-            print(f"Erro ao enviar dataflow: {ex}")
+        t1 = Task(1 + self.shift_task_id, self.dataflow_name, "docs_pairs_generation")
+        t1_input = DataSet("coliee_file_input", [Element([input_file, split])])
+        t1.add_dataset(t1_input)
+        t1.begin()
+        t1_output = DataSet("splitted_doc_pair_dataset",
+                            [Element([output_file, split, count, split_method, split_level])])        
+        t1.add_dataset(t1_output)
+        t1.end()
+        
+        self.dependencies["docs_pairs_generation"] = t1
+    
+    def set_get_example_task(self, data):
+        docs1_elements = []
+        docs2_elements = []
+        labels_elements = []
+        for temp in data:
+            guid = temp['guid']
+            label = temp['label']
+            q_paras = temp['q_paras']
+            c_paras = temp['c_paras']
+            doc1 = guid.split("_")[0]+".json"
+            doc2 = guid.split("_")[1]+".json"
+            for c_idx, c_p in enumerate(c_paras):
+                docs1_elements.append(Element([doc1,
+                                               c_p.replace("'", "''").encode('utf-8').decode('unicode-escape'),
+                                               c_idx,]))
+            for q_idx, q_p in enumerate(q_paras):
+                docs2_elements.append(Element([doc2,
+                                               q_p.replace("'", "''").encode('utf-8').decode('unicode-escape'),
+                                               q_idx,]))
+            labels_elements.append(Element([label]))
 
-    def register_task(self, json_path: str):
-        df = json.dumps(json.loads(Path(json_path).read_text()))
+        t_id = 2 + self.shift_task_id
+        t2 = Task(t_id, self.dataflow_name, "get_doc1_example", 
+                  dependency=self.dependencies["docs_pairs_generation"])
+        t2.begin()
+        add_n_elements(t2, "doc1_segment", docs1_elements)
+        t2.end()
+        self.dependencies["get_doc1_example"] = t2
 
-        try:
-            requests.post(
-                f"http://{self.host}:{self.port}/pde/task/json",
-                data=df,
-                headers=self.HEADERS,
-            )
-        except Exception as ex:
-            print(f"Erro ao enviar tarefa: {ex}")
-
-    def e(self, dt, num_msg, num_elements):
-        """
-        Envia mensagens com elementos de dados para um servidor local.
-
-        Args:
-            dt: Delay em segundos entre mensagens
-            num_msg: Número de mensagens a enviar
-            num_elements: Número total de elementos
-        """
-        num_elements_per_msg = num_elements // num_msg
-        output_file = f"./dt{dt}_num_msg{num_msg}_num_el{num_elements}.data"
-
-        print(
-            f"Sending {num_elements} data elements distributed in {num_msg} with {num_elements_per_msg} element(s) per message"
-        )
-
-        # Dataflow as a Python dict
-        df_dict = {
-            "tag": "uq_rtm",
-            "transformations": [
-                {
-                    "programs": [
-                        {"name": "SparseGrid", "path": "/bin/sparse_grid_cc_dataset"}
-                    ],
-                    "tag": "sparse_grid_construction",
-                    "sets": [
-                        {
-                            "tag": "sparsegridinput",
-                            "attributes": [
-                                {"name": "vmid", "type": "NUMERIC"},
-                                {"name": "dimension", "type": "NUMERIC"},
-                                {"name": "level", "type": "NUMERIC"},
-                            ],
-                            "type": "INPUT",
-                        },
-                        {
-                            "tag": "sparsegridoutput",
-                            "attributes": [
-                                {"name": "vmid", "type": "NUMERIC"},
-                                {"name": "dimension", "type": "NUMERIC"},
-                                {"name": "level", "type": "NUMERIC"},
-                                {"name": "region", "type": "FILE"},
-                                {"name": "weights", "type": "FILE"},
-                                {"name": "points", "type": "FILE"},
-                            ],
-                            "type": "OUTPUT",
-                        },
-                    ],
-                }
-            ],
-        }
-
-        # Serialize to JSON (the rest of the code expects `df` as a JSON string)
-        # df = json.dumps(df_dict)
-        df = json.loads(
-            "" + Path("./provenance/dataflow_example.json").read_text() + ""
-        )
-        df = json.dumps(df)
-        try:
-            requests.post(
-                f"http://{self.host}:{self.port}/pde/dataflow/json",
-                data=df,
-                headers=self.HEADERS,
-            )
-        except Exception as ex:
-            print(f"Erro ao enviar dataflow: {ex}")
-
-        # Construir elementos
-        # elements = ",".join(
-        #     [f'"1;8;{j};r;w;p"' for j in range(1, num_elements_per_msg + 1)]
-        # )
-        elements_list = [f"1;8;{j};r;w;p" for j in range(1, num_elements_per_msg + 1)]
-
-        # Enviar mensagens
-        for i in tqdm(range(1, num_msg + 1), leave=True):
-
-            content_dict = {
-                "subid": str(i),
-                "workspace": "/home/luciano/Desktop/pg",
-                "dataflow": "uq_rtm",
-                "sets": [
-                    {"elements": ["1;8;1"], "tag": "sparsegridinput"},
-                    {"elements": elements_list, "tag": "sparsegridoutput"},
-                ],
-                "dependency": {},
-                "resource": "local",
-                "id": str(i),
-                "transformation": "sparse_grid_construction",
-                "status": "FINISHED",
-            }
-
-            content = json.dumps(content_dict)
-            # content = f'{{"subid":"{i}","workspace":"/home/luciano/Desktop/pg","dataflow":"uq_rtm","sets":[{{"elements":["1;8;1"],"tag":"sparsegridinput"}}, {{"elements":[{elements}],"tag":"sparsegridoutput"}}],"dependency":{{}},"resource":"local","id":"{i}","transformation":"sparse_grid_construction","status":"FINISHED"}}'
-
-            try:
-                requests.post(
-                    f"http://{self.host}:{self.port}/pde/task/json",
-                    data=content,
-                    headers=self.HEADERS,
-                )
-            except Exception as ex:
-                print(f"Erro ao enviar tarefa {i}: {ex}")
-
-            print("Sent message ", i)
-            time.sleep(dt)
-
-
-if __name__ == "__main__":
-    # dt = 0.100  # sec
-    # num_msg = 50
-    # num_elements = num_msg
-    dfanalyzer = DfanalyzerService()
-    # dfanalyzer.e(dt, num_msg, num_elements)
-    # dfanalyzer.create_dataflow("./provenance/bert_pli_dataflow.json")
-    dfanalyzer.register_task("./provenance/bert_pli_restrospective_provenance.json")
+        t_id += 1
+        t3 = Task(t_id, self.dataflow_name, "get_doc2_example", 
+                  dependency=self.dependencies["docs_pairs_generation"])
+        t3.begin()
+        add_n_elements(t3, "doc2_segment", docs2_elements)
+        t3.end()
+        self.dependencies["get_doc2_example"] = t3
+        
+        t_id += 1
+        t4 = Task(t_id, self.dataflow_name, "get_label_example", 
+                  dependency=self.dependencies["docs_pairs_generation"])
+        t4.begin()
+        add_n_elements(t4, "label", labels_elements)
+        t4.end()
+        self.dependencies["get_label_example"] = t4

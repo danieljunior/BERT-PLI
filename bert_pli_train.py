@@ -23,6 +23,8 @@ from tools.poolout_tool import load_state_keywise
 from tools.eval_tool import gen_time_str, output_value
 from tools.train_tool import checkpoint
 
+from provenance.dfanalyzer_service import DfanalyzerService
+
 logging.basicConfig(format='%(asctime)s - %(levelname)s - %(name)s -   %(message)s',
                     datefmt='%m/%d/%Y %H:%M:%S',
                     level=logging.INFO)
@@ -128,8 +130,13 @@ if __name__ == "__main__":
     parser.add_argument("--output-path", type=str, default="output/checkpoints/bert-pli", help="output path to save checkpoints")
 
     args = parser.parse_args()
+    dataflow_name = "bert-pli-train"
+    provenance_service = DfanalyzerService(dataflow_name)
+    provenance_service.create_dataflow()
 
     config, parameters, gpu_list = init_setup(args)
+    
+    provenance_service.set_docs_pairs_generation_task(config, "train",)
 
     model = parameters['model']
     dataset = parameters['train_dataset']
@@ -159,7 +166,7 @@ if __name__ == "__main__":
         step = -1
 
         for step, data in tqdm(enumerate(dataset), desc="Batches", total=len(dataset), ncols=100, leave=False):
-
+            provenance_service.set_get_example_task(data)
             optimizer.zero_grad()
             
             results = model(data, config, gpu_list, None, "train")
@@ -180,6 +187,7 @@ if __name__ == "__main__":
                             "%.3lf" % (total_loss / (step + 1)), output_info, '\r', config)
             
             global_step += 1
+            break  # --- REMOVE THIS LINE FOR FULL TRAINING ---
 
         checkpoint(os.path.join(args.output_path, "%d.pkl" % current_epoch), model, optimizer, current_epoch, config,
                                 global_step)
