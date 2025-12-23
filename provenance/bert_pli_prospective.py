@@ -63,7 +63,6 @@ def create_bert_pli_dataflow(dataflow_tag="bert-pli3"):
     tf2_output.dependency = tf2._tag
     tf5_output = Set("doc1_relevant_segment", SetType.OUTPUT, [
         Attribute("file_id", AttributeType.TEXT),
-        Attribute("text", AttributeType.TEXT),
         Attribute("idx", AttributeType.NUMERIC),
         Attribute("criteria", AttributeType.TEXT),
         Attribute("epoch", AttributeType.NUMERIC)
@@ -77,7 +76,6 @@ def create_bert_pli_dataflow(dataflow_tag="bert-pli3"):
     tf3_output.dependency = tf3._tag
     tf6_output = Set("doc2_relevant_segment", SetType.OUTPUT, [
         Attribute("file_id", AttributeType.TEXT),
-        Attribute("text", AttributeType.TEXT),
         Attribute("idx", AttributeType.NUMERIC),
         Attribute("criteria", AttributeType.TEXT),
         Attribute("epoch", AttributeType.NUMERIC)
@@ -140,7 +138,7 @@ def create_bert_pli_dataflow(dataflow_tag="bert-pli3"):
     return df
 
 if __name__ == "__main__":
-    df = create_bert_pli_dataflow("bert-pli")
+    df = create_bert_pli_dataflow("bert-pli-test")
     df.save()
     
     print(f"Dataflow '{df._tag}' created and saved successfully!")

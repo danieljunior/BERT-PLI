@@ -139,6 +139,8 @@ if __name__ == "__main__":
     provenance_service.set_docs_pairs_generation_task(config, "train",)
 
     model = parameters['model']
+    model.set_provenance_service(provenance_service)
+    
     dataset = parameters['train_dataset']
     epoch = config.getint("train", "epoch")
     trained_epoch = parameters["trained_epoch"] + 1
@@ -169,7 +171,7 @@ if __name__ == "__main__":
             provenance_service.set_get_example_task(data)
             optimizer.zero_grad()
             
-            results = model(data, config, gpu_list, None, "train")
+            results = model(data, config, gpu_list, None, "train", epoch=current_epoch)
             
             loss, acc_result = results["loss"], results["acc_result"]
             total_loss += float(loss)
