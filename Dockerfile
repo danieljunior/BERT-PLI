@@ -21,6 +21,10 @@ RUN curl -O https://download.pytorch.org/whl/cu100/torchvision-0.3.0-cp36-cp36m-
 
 # Copy application code
 # COPY . .
+COPY provenance/dfa-lib-python provenance/dfa-lib-python
+WORKDIR /app/provenance/dfa-lib-python
+RUN python setup.py install
+WORKDIR /app
 
 CMD ["tail", "-f", "/dev/null"]
 # https://pytorch.org/get-started/previous-versions/
