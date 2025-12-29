@@ -31,6 +31,7 @@ class BertPLI(nn.Module):
     def forward(self, data, config, gpu_list, acc_result, mode, epoch=None):
         data = self.select_segments(data, epoch)
         data = self.tokenize_data(data, config, gpu_list, acc_result, mode)
+        #TODO capture bert_scores_calculation and max_pooling provenance
         poolout = self.poolout_max(
             data, self.poolout_config(config), gpu_list, acc_result, mode
         )
@@ -89,7 +90,7 @@ class BertPLI(nn.Module):
             data = self._learnable_selection(data)
         else:
             data = self.selection_layer.forward(data)
-
+        #TODO test learnable selection provenance
         self.provenance_service.set_get_relevant_segments_task(
             data, criteria=self.selection_mode, epoch=epoch
         )

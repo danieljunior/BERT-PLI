@@ -170,9 +170,9 @@ if __name__ == "__main__":
         for step, data in tqdm(enumerate(dataset), desc="Batches", total=len(dataset), ncols=100, leave=False):
             provenance_service.set_get_example_task(data)
             optimizer.zero_grad()
-            
+            #TODO capture classification provenance
             results = model(data, config, gpu_list, None, "train", epoch=current_epoch)
-            
+            #TODO capture evaluation provenance
             loss, acc_result = results["loss"], results["acc_result"]
             total_loss += float(loss)
 
