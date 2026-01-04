@@ -283,7 +283,6 @@ if __name__ == "__main__":
     t8.begin()
 
     row_idx = 0
-    scores_str = "[0.95, 0.87, 0.92, 0.78]"
     epoch_t8 = 1
     t8_output_elements = [
             Element([0, "[0.95, 0.87, 0.92, 0.78, 0.83]", epoch_t8]),

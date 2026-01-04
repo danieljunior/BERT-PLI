@@ -22,7 +22,7 @@ from tools.output_init import init_output_function
 from tools.poolout_tool import load_state_keywise
 from tools.eval_tool import gen_time_str, output_value
 from tools.train_tool import checkpoint
-
+from tools.accuracy_tool import gen_micro_macro_result
 from provenance.dfanalyzer_service import DfanalyzerService
 
 logging.basicConfig(format='%(asctime)s - %(levelname)s - %(name)s -   %(message)s',
@@ -170,11 +170,14 @@ if __name__ == "__main__":
         for step, data in tqdm(enumerate(dataset), desc="Batches", total=len(dataset), ncols=100, leave=False):
             provenance_service.set_get_example_task(data)
             optimizer.zero_grad()
-            #TODO capture classification provenance
             results = model(data, config, gpu_list, None, "train", epoch=current_epoch)
-            #TODO capture evaluation provenance
             loss, acc_result = results["loss"], results["acc_result"]
             total_loss += float(loss)
+
+            loss_metric = str(model.attention_rnn.criterion)
+            loss_value = results["loss"].item()
+            provenance_service.set_classification_task(loss_metric, loss_value, results['output'], epoch)
+            provenance_service.set_evaluation_task(gen_micro_macro_result(results['acc_result']), epoch)
 
             loss.backward()
             optimizer.step()

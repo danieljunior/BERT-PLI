@@ -1,4 +1,5 @@
 from typing import List
+import time
 import pymonetdb
 from dfa_lib_python.task import Task
 from dfa_lib_python.dataset import DataSet
@@ -8,32 +9,116 @@ from .bert_pli_retrospective import add_n_elements
 
 
 class DfanalyzerService:
+    URL = "dfanalyzer"
+    PORT = 50000
+    DATABASE = "dataflow_analyzer"
+    USERNAME = "monetdb"
+    PASSWORD = "monetdb"
 
     def __init__(self, dataflow_name: str):
         self.dataflow_name = dataflow_name
         self.dataflow = None
         self.dependencies = {}
 
-    def create_dataflow(self):
-        self.dataflow = prospective.create_bert_pli_dataflow(
-            dataflow_tag=self.dataflow_name
+    def get_monet_connection(self):
+        conn = pymonetdb.connect(
+            hostname=self.URL,
+            port=self.PORT,
+            database=self.DATABASE,
+            username=self.USERNAME,
+            password=self.PASSWORD,
         )
-        self.dataflow.save()
+        return conn
+
+    def update_custom_text_columns(self):
+        conn = self.get_monet_connection()
+        cursor = conn.cursor()
+        already = False
+
+        while not already:
+            conn.commit()
+            cursor.execute("SELECT EXISTS (SELECT 1 FROM sys.tables WHERE name = 'ds_feature_vector' AND system = false);")
+            response = cursor.fetchone()[0]
+            if response:
+                already = True
+            else:
+                time.sleep(1)
+
+
+        changes = [
+            ['ds_doc1_segment', 'text' ],
+            ['ds_doc2_segment', 'text' ],
+            ['ds_interaction_map', 'scores' ],
+            ['ds_feature_vector', 'value' ],
+        ]
+
+        query = """
+            ALTER TABLE %s ADD COLUMN %s varchar(100000);
+            UPDATE %s SET %s = CONVERT(%s, varchar(100000));
+            DROP VIEW %s restrict;
+            ALTER TABLE %s DROP COLUMN %s restrict;
+            ALTER TABLE %s RENAME COLUMN %s TO %s;
+            CREATE VIEW %s AS SELECT * FROM %s;  
+        """
+        for change in changes:
+            ds_table = change[0]
+            column = change[1]
+            tmp_column = 'tmp_'+ column
+            view = ds_table.split('ds_')[1]
+            cursor.execute(query % ( ds_table, tmp_column, 
+                                    ds_table, tmp_column, column,
+                                    view,
+                                    ds_table, column,
+                                    ds_table, tmp_column, column,
+                                    view, ds_table,
+                                )
+                            )
+            conn.commit()
+        cursor.close()
+        conn.close()
+
+    def create_dataflow(self):
+        conn = self.get_monet_connection()
+        cursor = conn.cursor()
+
+        # 1. Get df_id
+        cursor.execute("SELECT id FROM dataflow WHERE tag = %s;", (self.dataflow_name,))
+        row = cursor.fetchone()
+
+        if row is None:
+            self.dataflow = prospective.create_bert_pli_dataflow(
+                dataflow_tag=self.dataflow_name
+            )
+            self.dataflow.save()
+            self.update_custom_text_columns()
+
 
     def get_last_task_id(self, df_tag: str) -> int:
-        URL = "dfanalyzer"
-        PORT = 50000
-        DATABASE = "dataflow_analyzer"
-        USERNAME = "monetdb"
-        PASSWORD = "monetdb"
+        conn = self.get_monet_connection()
+        conn.commit()
+        cursor = conn.cursor()
+        query_1 = """
+            SELECT t.identifier 
+            FROM task t
+            ORDER BY t.identifier DESC 
+            LIMIT 1;
+        """
+        cursor.execute(query_1)
+        row = cursor.fetchone()
 
-        conn = pymonetdb.connect(
-            hostname=URL,
-            port=PORT,
-            database=DATABASE,
-            username=USERNAME,
-            password=PASSWORD,
-        )
+        # If no tasks exist, return 0
+        if row is None:
+            last_identifier = 0
+        else:
+            last_identifier = row[0]
+
+        cursor.close()
+        conn.close()
+
+        return last_identifier
+
+    def get_last_task_id_from_dataflow(self, df_tag: str) -> int:
+        conn = self.get_monet_connection()
         cursor = conn.cursor()
 
         # 1. Get df_id
@@ -206,3 +291,58 @@ class DfanalyzerService:
         add_n_elements(t6, "doc2_relevant_segment", doc2_elements)
         t6.end()
         self.dependencies["doc2_relevant_segments_selection"] = t6
+    
+    def set_bert_scores_calculation(self, data, epoch: int):
+        t_id = self.next_task_id()
+        t7 = Task(t_id, self.dataflow_name, "bert_scores_calculation", 
+                  dependency=[self.dependencies["doc1_relevant_segments_selection"], 
+                              self.dependencies["doc2_relevant_segments_selection"]])
+        t7.begin()
+        t7_output_elements = []
+        for qi, qrow in enumerate(data.get('original_lst')):
+            for ci, scores in enumerate(qrow):
+                t7_output_elements.append(
+                    Element([data.get('guid'), qi, ci, str(scores), epoch])
+                )
+        add_n_elements(t7, "interaction_map", t7_output_elements)
+        t7.end()
+        self.dependencies["bert_scores_calculation"] = t7
+        
+        # Task 8: max_pooling
+        t8 = Task(t_id+1, self.dataflow_name, "max_pooling", dependency=t7)
+        t8.begin()
+        t8_output_elements=[]
+        for idx, value in zip(data.get('selected_c_indices'), data.get('max_out')):
+            t8_output_elements.append(Element([data.get('guid'), idx, str(value), epoch]))
+        
+        add_n_elements(t8, "feature_vector", t8_output_elements)
+        t8.end()
+        self.dependencies["max_pooling"] = t8
+    
+    def set_classification_task(self, loss_metric, loss_value, predictions, epoch):
+        t_id = self.next_task_id()
+        t9 = Task(t_id, self.dataflow_name, "classification", 
+                  dependency=self.dependencies["max_pooling"])
+        t9.begin()
+        t9_output_elements = []
+        for pred in predictions:
+            guid, predicted, label = pred[0], pred[1], pred[2]
+            t9_output_elements.append(Element([guid, predicted.item(),
+                                               label.index(max(label)),
+                                               loss_metric, loss_value, epoch]))
+        add_n_elements(t9, "output", t9_output_elements)
+        t9.end()
+        self.dependencies["classification"] = t9
+    
+    def set_evaluation_task(self, eval_metrics: dict, epoch: int):
+        t_id = self.next_task_id()
+        t10 = Task(t_id, self.dataflow_name, "evaluation", 
+                   dependency=[self.dependencies["classification"],
+                               self.dependencies["get_label_example"]])
+        t10.begin()
+        t10_output_elements = []
+        for metric_name, metric_value in eval_metrics.items():
+            t10_output_elements.append(Element([metric_name, metric_value, epoch]))
+        add_n_elements(t10, "metric", t10_output_elements)
+        t10.end()
+        self.dependencies["evaluation"] = t10

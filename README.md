@@ -9,9 +9,13 @@
 
   2. `docker build --no-cache --tag dfanalyzer .`
 
+  - On DGX, build and save locally, then load: `docker load -i custom_dfanalyzer.tar`
+
 - Start dfanalyzer container
 
   `docker run -itd --name dfanalyzer -p 22000:22000 -p 50000:50000 dfanalyzer`
+  
+  - On DGX: `docker run -itd --name dfanalyzer --shm-size 5gb --security-opt seccomp=unconfined -p 22000:22000 -p 50000:50000 custom_dfanalyzer`
 
 ### BERT-PLI
 

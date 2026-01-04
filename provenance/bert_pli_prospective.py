@@ -90,7 +90,9 @@ def create_bert_pli_dataflow(dataflow_tag="bert-pli3"):
     tf6_output.set_type(SetType.INPUT)
     tf6_output.dependency = tf6._tag
     tf7_output = Set("interaction_map", SetType.OUTPUT, [
-        Attribute("row", AttributeType.NUMERIC),
+        Attribute("guid", AttributeType.TEXT),
+        Attribute("query", AttributeType.NUMERIC),
+        Attribute("candidate", AttributeType.NUMERIC),
         Attribute("scores", AttributeType.TEXT),
         Attribute("epoch", AttributeType.NUMERIC)
     ])
@@ -102,8 +104,9 @@ def create_bert_pli_dataflow(dataflow_tag="bert-pli3"):
     tf7_output.set_type(SetType.INPUT)
     tf7_output.dependency = tf7._tag
     tf8_output = Set("feature_vector", SetType.OUTPUT, [
+        Attribute("guid", AttributeType.TEXT),
         Attribute("idx", AttributeType.NUMERIC),
-        Attribute("value", AttributeType.NUMERIC),
+        Attribute("value", AttributeType.TEXT),
         Attribute("epoch", AttributeType.NUMERIC)
     ])
     tf8.set_sets([tf7_output, tf8_output])
@@ -114,7 +117,9 @@ def create_bert_pli_dataflow(dataflow_tag="bert-pli3"):
     tf8_output.set_type(SetType.INPUT)
     tf8_output.dependency = tf8._tag
     tf9_output = Set("output", SetType.OUTPUT, [
-        Attribute("predicted_label", AttributeType.NUMERIC),
+        Attribute("guid", AttributeType.TEXT),
+        Attribute("predicted", AttributeType.NUMERIC),
+        Attribute("label", AttributeType.NUMERIC),
         Attribute("loss_metric", AttributeType.TEXT),
         Attribute("loss_value", AttributeType.NUMERIC),
         Attribute("epoch", AttributeType.NUMERIC)
@@ -123,14 +128,16 @@ def create_bert_pli_dataflow(dataflow_tag="bert-pli3"):
     df.add_transformation(tf9)
     
     # Transformation 10: evaluating
-    tf10 = Transformation("evaluating")
+    tf10 = Transformation("evaluation")
     tf9_output.set_type(SetType.INPUT)
     tf9_output.dependency = tf9._tag
     tf4_output.set_type(SetType.INPUT)
     tf4_output.dependency = tf4._tag
     tf10_output = Set("metric", SetType.OUTPUT, [
         Attribute("type", AttributeType.TEXT),
-        Attribute("value", AttributeType.NUMERIC)
+        Attribute("value", AttributeType.NUMERIC),
+        Attribute("epoch", AttributeType.NUMERIC)
+
     ])
     tf10.set_sets([tf9_output, tf4_output, tf10_output])
     df.add_transformation(tf10)

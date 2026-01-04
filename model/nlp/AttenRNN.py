@@ -135,7 +135,7 @@ class AttentionRNN(nn.Module):
             label = data['label']
             loss = self.criterion(y, label.view(-1))
             acc_result = self.accuracy_function(y, label, config, acc_result)
-            if mode == 'valid':
+            if mode == 'valid' or mode == 'train':
                 output = []
                 y = y.cpu().detach().numpy().tolist()
                 for i, guid in enumerate(data['guid']):

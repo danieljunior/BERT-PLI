@@ -31,9 +31,8 @@ class BertPLI(nn.Module):
     def forward(self, data, config, gpu_list, acc_result, mode, epoch=None):
         data = self.select_segments(data, epoch)
         data = self.tokenize_data(data, config, gpu_list, acc_result, mode)
-        #TODO capture bert_scores_calculation and max_pooling provenance
         poolout = self.poolout_max(
-            data, self.poolout_config(config), gpu_list, acc_result, mode
+            data, self.poolout_config(config), gpu_list, acc_result, mode, epoch
         )
         poolout = {guid: result for guid, result in poolout["output"]}
         labels = data["label"] if mode != "test" else []
@@ -49,6 +48,7 @@ class BertPLI(nn.Module):
 
     def set_provenance_service(self, provenance_service):
         self.provenance_service = provenance_service
+        self.poolout_max.set_provenance_service(provenance_service)
 
     def set_tokenizer_formatter(self, mode, config, *args, **params):
         self.tokenizer_formatter = BertDocParaFormatter(config, mode, *args, **params)
