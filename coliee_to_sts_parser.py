@@ -38,10 +38,7 @@ def generate_negative_pairs(labels, files):
     
     return negative_pairs
 
-def process_files(files_path, labels_file, output_file, summarize=False):
-    # Load spaCy model
-    # nlp = spacy.load("en_core_web_sm")
-    
+def process_files(files_path, labels_file, output_file_vanilla, output_file_sumy):
     # Read labels file
     with open(labels_file, 'r') as f:
         labels = json.load(f)
@@ -54,10 +51,7 @@ def process_files(files_path, labels_file, output_file, summarize=False):
     positive_pairs = [(q, p) for q in labels for p in labels[q]]
     negative_pairs = generate_negative_pairs(labels, files)
     
-    # Process all pairs
-    output_data = []
-    
-    # Process positive pairs
+    # Initialize Ray
     ray.init(num_cpus=6, ignore_reinit_error=True)
 
     @ray.remote
@@ -102,35 +96,48 @@ def process_files(files_path, labels_file, output_file, summarize=False):
     positive_pairs_set = set(positive_pairs)
     all_pairs = positive_pairs + negative_pairs
 
-    def process_pair_wrapper(q_file, p_file, files_path, positive_pairs_set, summarize=False):
-        if summarize:
-            return sumy_process_pair.remote(q_file, p_file, files_path, positive_pairs_set)
-        else:
-            return process_pair.remote(q_file, p_file, files_path, positive_pairs_set)
-
+    # Process all pairs - generate both vanilla and sumy versions simultaneously
     batch_size = 10
-    output_data = []
+    vanilla_data = []
+    sumy_data = []
+    
     for i in tqdm(range(0, len(all_pairs), batch_size), desc="Batching Ray tasks"):
         batch = all_pairs[i:i + batch_size]
-        futures = [
-            process_pair_wrapper(q_file, p_file, files_path, positive_pairs_set, summarize=summarize)
-            for q_file, p_file in tqdm(batch, desc="Dispatching Ray tasks", leave=False)
-        ]
-        output_data.extend(ray.get(futures))
+        
+        # Dispatch both vanilla and sumy tasks for each pair
+        vanilla_futures = []
+        sumy_futures = []
+        
+        for q_file, p_file in tqdm(batch, desc="Dispatching Ray tasks", leave=False):
+            vanilla_futures.append(process_pair.remote(q_file, p_file, files_path, positive_pairs_set))
+            sumy_futures.append(sumy_process_pair.remote(q_file, p_file, files_path, positive_pairs_set))
+        
+        # Collect results in order
+        vanilla_data.extend(ray.get(vanilla_futures))
+        sumy_data.extend(ray.get(sumy_futures))
     
-    # Write output line by line
-    with open(output_file, 'w', encoding='utf-8') as f:
-        for entry in output_data:
+    # Write vanilla output
+    with open(output_file_vanilla, 'w', encoding='utf-8') as f:
+        for entry in vanilla_data:
             f.write(json.dumps(entry, ensure_ascii=False) + '\n')
     
-    print(f"Processed {len(output_data)} entries")
+    # Write sumy output
+    with open(output_file_sumy, 'w', encoding='utf-8') as f:
+        for entry in sumy_data:
+            f.write(json.dumps(entry, ensure_ascii=False) + '\n')
+    
+    print(f"Processed {len(vanilla_data)} vanilla entries")
+    print(f"Processed {len(sumy_data)} sumy entries")
+    print(f"Vanilla output: {output_file_vanilla}")
+    print(f"Sumy output: {output_file_sumy}")
 
 def main():
     files_path = "/app/data/COLIEE/task1_train_files_2024/task1_train_files_2024"
     labels_file = "/app/data/COLIEE/task1_train_labels_2024.json"
-    output_file = "/app/data/COLIEE/train_summarized_sentences.json"
+    output_file_vanilla = "/app/data/COLIEE/train_vanilla_sentences.json"
+    output_file_sumy = "/app/data/COLIEE/train_summarized_sentences.json"
 
-    process_files(files_path, labels_file, output_file, summarize=True)
+    process_files(files_path, labels_file, output_file_vanilla, output_file_sumy)
 
 if __name__ == "__main__":
     main()
