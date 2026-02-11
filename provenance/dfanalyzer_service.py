@@ -15,11 +15,12 @@ class DfanalyzerService:
     USERNAME = "monetdb"
     PASSWORD = "monetdb"
 
-    def __init__(self, dataflow_name: str):
+    def __init__(self, dataflow_name: str, bypass: bool = False):
         self.dataflow_name = dataflow_name
         self.dataflow = None
         self.dependencies = {}
-
+        self.bypass = bypass
+    
     def get_monet_connection(self):
         conn = pymonetdb.connect(
             hostname=self.URL,
@@ -31,6 +32,9 @@ class DfanalyzerService:
         return conn
 
     def update_custom_text_columns(self):
+        if self.bypass: 
+            return
+
         conn = self.get_monet_connection()
         cursor = conn.cursor()
         already = False
@@ -48,7 +52,8 @@ class DfanalyzerService:
         changes = [
             ['ds_doc1_segment', 'text' ],
             ['ds_doc2_segment', 'text' ],
-            ['ds_interaction_map', 'scores' ],
+            # ['ds_interaction_map', 'scores' ],
+            ['ds_feature_vector', 'idx' ],
             ['ds_feature_vector', 'value' ],
         ]
 
@@ -78,6 +83,9 @@ class DfanalyzerService:
         conn.close()
 
     def create_dataflow(self):
+        if self.bypass: 
+            return
+
         conn = self.get_monet_connection()
         cursor = conn.cursor()
 
@@ -94,6 +102,9 @@ class DfanalyzerService:
 
 
     def get_last_task_id(self, df_tag: str) -> int:
+        if self.bypass: 
+            return
+
         conn = self.get_monet_connection()
         conn.commit()
         cursor = conn.cursor()
@@ -118,6 +129,9 @@ class DfanalyzerService:
         return last_identifier
 
     def get_last_task_id_from_dataflow(self, df_tag: str) -> int:
+        if self.bypass: 
+            return
+
         conn = self.get_monet_connection()
         cursor = conn.cursor()
 
@@ -156,10 +170,16 @@ class DfanalyzerService:
         return last_identifier
 
     def next_task_id(self) -> int:
+        if self.bypass: 
+            return
+
         last_id = self.get_last_task_id(self.dataflow_name)
         return last_id + 1
 
     def set_docs_pairs_generation_task(self, config, split):
+        if self.bypass: 
+            return
+
         input_file = config.get("data", split + "_coliee_file")
         output_file = (
             config.get("data", split + "_data_path")
@@ -186,6 +206,9 @@ class DfanalyzerService:
         self.dependencies["docs_pairs_generation"] = t1
 
     def set_get_example_task(self, data):
+        if self.bypass: 
+            return
+
         docs1_elements = []
         docs2_elements = []
         labels_elements = []
@@ -259,16 +282,25 @@ class DfanalyzerService:
         self.dependencies["get_label_example"] = t4
 
     def set_get_relevant_segments_task(self, data, criteria: str, epoch: int):
+        if self.bypass: 
+            return
+
         doc1_elements = []
         doc2_elements = []
         for row in data:
             q_file_id, c_file_id = row["guid"].split("_")
-            doc1_idx: List[int] = row["c_selected_indices"]
-            doc2_idx: List[int] = row["q_selected_indices"]
-            for idx in doc1_idx:
-                doc1_elements.append(Element([q_file_id + ".json", idx, criteria, epoch]))
-            for idx in doc2_idx:
-                doc2_elements.append(Element([c_file_id + ".json", idx, criteria, epoch]))
+            if "c_selected_indices" in row and "q_selected_indices" in row:
+                doc1_idx: List[int] = row["c_selected_indices"]
+                doc2_idx: List[int] = row["q_selected_indices"]
+                for idx in doc1_idx:
+                    doc1_elements.append(Element([q_file_id + ".json", idx, criteria, epoch]))
+                for idx in doc2_idx:
+                    doc2_elements.append(Element([c_file_id + ".json", idx, criteria, epoch]))
+            else: #no selection
+                for idx, _ in enumerate(row["q_paras"]):
+                    doc1_elements.append(Element([q_file_id + ".json", idx, criteria, epoch]))
+                for idx, _ in enumerate(row["c_paras"]):
+                    doc2_elements.append(Element([c_file_id + ".json", idx, criteria, epoch]))
         t_id = self.next_task_id()
         t5 = Task(
             t_id,
@@ -293,33 +325,42 @@ class DfanalyzerService:
         self.dependencies["doc2_relevant_segments_selection"] = t6
     
     def set_bert_scores_calculation(self, data, epoch: int):
+        if self.bypass: 
+            return
+
         t_id = self.next_task_id()
-        t7 = Task(t_id, self.dataflow_name, "bert_scores_calculation", 
-                  dependency=[self.dependencies["doc1_relevant_segments_selection"], 
-                              self.dependencies["doc2_relevant_segments_selection"]])
-        t7.begin()
-        t7_output_elements = []
-        for qi, qrow in enumerate(data.get('original_lst')):
-            for ci, scores in enumerate(qrow):
-                t7_output_elements.append(
-                    Element([data.get('guid'), qi, ci, str(scores), epoch])
-                )
-        add_n_elements(t7, "interaction_map", t7_output_elements)
-        t7.end()
-        self.dependencies["bert_scores_calculation"] = t7
+        # t7 = Task(t_id, self.dataflow_name, "bert_scores_calculation", 
+        #           dependency=[self.dependencies["doc1_relevant_segments_selection"], 
+        #                       self.dependencies["doc2_relevant_segments_selection"]])
+        # t7.begin()
+        # t7_output_elements = []
+        # for qi, qrow in enumerate(data.get('original_lst')):
+        #     for ci, scores in enumerate(qrow):
+        #         t7_output_elements.append(
+        #             Element([data.get('guid'), qi, ci, str(scores), epoch])
+        #         )
+        # add_n_elements(t7, "interaction_map", t7_output_elements)
+        # t7.end()
+        # self.dependencies["bert_scores_calculation"] = t7
         
         # Task 8: max_pooling
-        t8 = Task(t_id+1, self.dataflow_name, "max_pooling", dependency=t7)
+        # t8 = Task(t_id+1, self.dataflow_name, "max_pooling", dependency=t7)
+        t8 = Task(t_id, self.dataflow_name, "max_pooling", 
+                  dependency=[self.dependencies["doc1_relevant_segments_selection"], 
+                              self.dependencies["doc2_relevant_segments_selection"]])
         t8.begin()
         t8_output_elements=[]
         for idx, value in zip(data.get('selected_c_indices'), data.get('max_out')):
-            t8_output_elements.append(Element([data.get('guid'), idx, str(value), epoch]))
+            t8_output_elements.append(Element([data.get('guid'), str(idx), str(value), epoch]))
         
         add_n_elements(t8, "feature_vector", t8_output_elements)
         t8.end()
         self.dependencies["max_pooling"] = t8
     
     def set_classification_task(self, loss_metric, loss_value, predictions, epoch):
+        if self.bypass: 
+            return
+
         t_id = self.next_task_id()
         t9 = Task(t_id, self.dataflow_name, "classification", 
                   dependency=self.dependencies["max_pooling"])
@@ -335,6 +376,9 @@ class DfanalyzerService:
         self.dependencies["classification"] = t9
     
     def set_evaluation_task(self, eval_metrics: dict, epoch: int):
+        if self.bypass: 
+            return
+
         t_id = self.next_task_id()
         t10 = Task(t_id, self.dataflow_name, "evaluation", 
                    dependency=[self.dependencies["classification"],

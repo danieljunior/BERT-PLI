@@ -84,32 +84,42 @@ def create_bert_pli_dataflow(dataflow_tag="bert-pli3"):
     df.add_transformation(tf6)
     
     # Transformation 7: bert_scores_calculation
-    tf7 = Transformation("bert_scores_calculation")
+    # tf7 = Transformation("bert_scores_calculation")
+    # tf5_output.set_type(SetType.INPUT)
+    # tf5_output.dependency = tf5._tag
+    # tf6_output.set_type(SetType.INPUT)
+    # tf6_output.dependency = tf6._tag
+    # tf7_output = Set("interaction_map", SetType.OUTPUT, [
+    #     Attribute("guid", AttributeType.TEXT),
+    #     Attribute("query", AttributeType.NUMERIC),
+    #     Attribute("candidate", AttributeType.NUMERIC),
+    #     Attribute("scores", AttributeType.TEXT),
+    #     Attribute("epoch", AttributeType.NUMERIC)
+    # ])
+    # tf7.set_sets([tf5_output, tf6_output, tf7_output])
+    # df.add_transformation(tf7)
+    
+    # Transformation 8: max_pooling
+    tf8 = Transformation("max_pooling")
+    
+    # tf7_output.set_type(SetType.INPUT)
+    # tf7_output.dependency = tf7._tag
+    
     tf5_output.set_type(SetType.INPUT)
     tf5_output.dependency = tf5._tag
     tf6_output.set_type(SetType.INPUT)
     tf6_output.dependency = tf6._tag
-    tf7_output = Set("interaction_map", SetType.OUTPUT, [
-        Attribute("guid", AttributeType.TEXT),
-        Attribute("query", AttributeType.NUMERIC),
-        Attribute("candidate", AttributeType.NUMERIC),
-        Attribute("scores", AttributeType.TEXT),
-        Attribute("epoch", AttributeType.NUMERIC)
-    ])
-    tf7.set_sets([tf5_output, tf6_output, tf7_output])
-    df.add_transformation(tf7)
-    
-    # Transformation 8: max_pooling
-    tf8 = Transformation("max_pooling")
-    tf7_output.set_type(SetType.INPUT)
-    tf7_output.dependency = tf7._tag
+
     tf8_output = Set("feature_vector", SetType.OUTPUT, [
         Attribute("guid", AttributeType.TEXT),
-        Attribute("idx", AttributeType.NUMERIC),
+        Attribute("idx", AttributeType.TEXT),
         Attribute("value", AttributeType.TEXT),
         Attribute("epoch", AttributeType.NUMERIC)
     ])
-    tf8.set_sets([tf7_output, tf8_output])
+    
+    # tf8.set_sets([tf7_output, tf8_output])
+    
+    tf8.set_sets([tf5_output, tf6_output, tf8_output])
     df.add_transformation(tf8)
     
     # Transformation 9: classification
