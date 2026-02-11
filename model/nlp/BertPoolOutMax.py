@@ -55,14 +55,10 @@ class BertPoolOutMax(nn.Module):
                     # print('after maxpool', max_out.size())
                     max_out = max_out.squeeze()
                     # print('after squeeze', max_out.size())
-                    
                     max_indices = max_indices.squeeze()
-                    # Convert flattened indices to c_para indices
-                    selected_c_indices = max_indices % self.max_para_c  # Shape: [768, step]
-                    
                     max_out = max_out.transpose(0, 1) 
                     # print('after transpose', max_out.size()) -> torch.Size([3, 768]) step(q), embedding (max_pooling over c)
-                    selected_c_indices = selected_c_indices.transpose(0, 1)  # [step, 768]
+                    selected_c_indices = max_indices.transpose(0, 1)  # [step, 768]
 
                     # Collect data for concatenation
                     all_max_out.append(max_out)

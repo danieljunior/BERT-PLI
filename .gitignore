@@ -17,3 +17,4 @@ support/.venv
 qdrant/
 backup_qdrant/
 **.out
+log/
