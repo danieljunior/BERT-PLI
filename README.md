@@ -7,15 +7,21 @@
 - Build: 
   1. Go to `DfAnalyzer-Docker` folder
 
-  2. `docker build --no-cache --tag dfanalyzer .`
+  2. Build: `docker build --no-cache --tag dfanalyzer .`
 
-  - On DGX, build and save locally, then load: `docker load -i custom_dfanalyzer.tar`
+  - *On DGX* 
+    1. Build on localhost and save as tar file: `docker save custom_dfanalyzer:latest -o custom_dfanalyzer.tar`
 
-- Start dfanalyzer container
+    2. Copy to DGX
+    
+    2. Then load the image: `docker load -i custom_dfanalyzer.tar`
+
+- Start dfanalyzer container:
 
   `docker run -itd --name dfanalyzer -p 22000:22000 -p 50000:50000 dfanalyzer`
   
-  - On DGX: `docker run -itd --name dfanalyzer --shm-size 5gb --security-opt seccomp=unconfined -p 22000:22000 -p 50000:50000 custom_dfanalyzer`
+  - *On DGX*: 
+    - `docker run -itd --name dfanalyzer --shm-size 5gb --security-opt seccomp=unconfined -p 22000:22000 -p 50000:50000 custom_dfanalyzer`
 
 ### BERT-PLI
 
@@ -44,6 +50,7 @@ change logrotate setup: `nohup sh -c 'while true; do SIZE=$(stat --printf="%s" n
 `nohup ./run_test.sh config/nlp/AttenGRU.config 0 output/checkpoints/vanilla_attengru/59.pkl output/results/vanilla/gru_results.json output/results/vanilla/gru_parsed_results.json data/old/task1_test_labels_2024.json output/results/vanilla/gru_metrics.json &> test_vanilla_gru.log &`
 
 `nohup ./run_test.sh config/nlp/AttenLSTM.config 1 output/checkpoints/vanilla_attenlstm/59.pkl output/results/vanilla/lstm_results.json output/results/vanilla/lstm_parsed_results.json data/old/task1_test_labels_2024.json output/results/vanilla/lstm_metrics.json &> test_vanilla_lstm.log &`
+
 --------------------------------------------------
 
 `python bert_pli_train.py --config config/nlp/BertPLI.config --checkpoint output/checkpoints/bert_finetuned/1.pkl --gpu 0,1`
