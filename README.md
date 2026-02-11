@@ -30,7 +30,20 @@
     - `USER_ID=${USER_ID} GROUP_ID=${GROUP_ID} docker run -itd --rm --shm-size 5gb --name bert-pli --runtime nvidia -e NVIDIA_VISIBLE_DEVICES=7 -v ${PWD}:/app bert-pli:latest tail -f /dev/null`
 
 
+#### Optional
 
+- When running scripts with `nohup`, use this command to control nohup file size without 
+change logrotate setup: `nohup sh -c 'while true; do SIZE=$(stat --printf="%s" nohup.out); if [ $SIZE -gt 10000 ]; then echo "" > nohup.out; fi; sleep 60; done' >/dev/null 2>&1 &  `
+
+- Auxiliary scripts example:
+
+`./run_train.sh config/nlp/BertPoolOutMax.config 0,1,2,3 output/checkpoints/bert_finetuned/1.pkl output/results/vanilla_test_pool_out_max.json test_sumy_sentences.json output/results/vanilla_test_pool_out_max.json output/results/vanilla_test_poolout.json config/nlp/AttenLSTM.config 0 config/nlp/AttenGRU.config 1`
+
+`./run_test_poolout.sh config/nlp/BertPoolOutMax.config 0,1,2,3 output/checkpoints/bert_finetuned/1.pkl output/results/vanilla_test_pool_out_max.json data/test_sumy_sentences.json output/results/vanilla_test_poolout.json config/nlp/BertPoolOutMax_sumy.config output/results/summarized_test_pool_out_max.json data/test_summarized_sentences.json output/results/summarized_test_poolout.json`
+
+`nohup ./run_test.sh config/nlp/AttenGRU.config 0 output/checkpoints/vanilla_attengru/59.pkl output/results/vanilla/gru_results.json output/results/vanilla/gru_parsed_results.json data/old/task1_test_labels_2024.json output/results/vanilla/gru_metrics.json &> test_vanilla_gru.log &`
+
+`nohup ./run_test.sh config/nlp/AttenLSTM.config 1 output/checkpoints/vanilla_attenlstm/59.pkl output/results/vanilla/lstm_results.json output/results/vanilla/lstm_parsed_results.json data/old/task1_test_labels_2024.json output/results/vanilla/lstm_metrics.json &> test_vanilla_lstm.log &`
 --------------------------------------------------
 
 `python bert_pli_train.py --config config/nlp/BertPLI.config --checkpoint output/checkpoints/bert_finetuned/1.pkl --gpu 0,1`
