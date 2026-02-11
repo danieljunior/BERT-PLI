@@ -127,11 +127,11 @@ if __name__ == "__main__":
     parser.add_argument('--config', '-c', help="specific config file", required=True)
     parser.add_argument('--gpu', '-g', help="gpu id list")
     parser.add_argument('--checkpoint', help="checkpoint file path")
-    parser.add_argument("--output-path", type=str, default="output/checkpoints/bert-pli", help="output path to save checkpoints")
+    parser.add_argument("--output-path", type=str, default="output/checkpoints/vanilla-bert-pli", help="output path to save checkpoints")
 
     args = parser.parse_args()
-    dataflow_name = "bert-pli-train"
-    provenance_service = DfanalyzerService(dataflow_name)
+    dataflow_name = "bert-pli"
+    provenance_service = DfanalyzerService(dataflow_name, bypass=False)
     provenance_service.create_dataflow()
 
     config, parameters, gpu_list = init_setup(args)
@@ -176,8 +176,8 @@ if __name__ == "__main__":
 
             loss_metric = str(model.attention_rnn.criterion)
             loss_value = results["loss"].item()
-            provenance_service.set_classification_task(loss_metric, loss_value, results['output'], epoch)
-            provenance_service.set_evaluation_task(gen_micro_macro_result(results['acc_result']), epoch)
+            provenance_service.set_classification_task(loss_metric, loss_value, results['output'], current_epoch)
+            provenance_service.set_evaluation_task(gen_micro_macro_result(results['acc_result']), current_epoch)
 
             loss.backward()
             optimizer.step()
@@ -192,7 +192,7 @@ if __name__ == "__main__":
                             "%.3lf" % (total_loss / (step + 1)), output_info, '\r', config)
             
             global_step += 1
-            break  # --- REMOVE THIS LINE FOR FULL TRAINING ---
+           # break # Remove this break to enable full training
 
         checkpoint(os.path.join(args.output_path, "%d.pkl" % current_epoch), model, optimizer, current_epoch, config,
                                 global_step)
