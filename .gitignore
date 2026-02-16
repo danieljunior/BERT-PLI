@@ -18,3 +18,4 @@ qdrant/
 backup_qdrant/
 **.out
 log/
+*.tar
