@@ -19,3 +19,4 @@ backup_qdrant/
 **.out
 log/
 *.tar
+*.bin

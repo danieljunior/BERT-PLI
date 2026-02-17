@@ -3,17 +3,15 @@ from dfa_lib_python.dataset import DataSet
 from dfa_lib_python.element import Element
 import pickle
 
-tag = 'test_dataflow'
+from persistence_service import PersistenceService
+from prospective_service import ProspectiveService
 
-dependencies = {}
-try:
-    with open('/app/test/dependencies.bin', 'rb') as f:
-        dependencies = pickle.load(f)
-except FileNotFoundError:
-    pass
+prov_persistence = PersistenceService(ProspectiveService.DEFAULT_DATAFLOW_TAG)
+tf_dependencies_tasks = prov_persistence.load_task_dependencies(ProspectiveService.TF_FINETUNE_BERT)
 
-
-finetune_bert = Task(1 , tag, "finetune_bert")
+finetune_bert = Task(1, ProspectiveService.DEFAULT_DATAFLOW_TAG, 
+                        ProspectiveService.TF_FINETUNE_BERT,
+                        dependency=tf_dependencies_tasks)
 bert_base = DataSet("bert_base", [Element(["/path/to/bert_base/checkpoint"])])
 finetune_bert.add_dataset(bert_base)
 entailment_config = DataSet("entailment_config", [Element(["/path/to/entailment/config"])])
@@ -23,11 +21,4 @@ finetuned_bert = DataSet("finetuned_bert_model", [Element(["/path/to/finetuned_b
 finetune_bert.add_dataset(finetuned_bert)
 finetune_bert.end()
 
-finetune_bert_file = '/app/test/finetune_bert.bin'
-with open(finetune_bert_file, 'wb') as f:
-    pickle.dump(finetune_bert, f)
-
-dependencies['finetune_bert'] = finetune_bert_file
-
-with open('/app/test/dependencies.bin', 'wb') as f:
-    pickle.dump(dependencies, f)
+prov_persistence.save_task(ProspectiveService.TF_FINETUNE_BERT, finetune_bert)
