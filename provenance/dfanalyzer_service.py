@@ -4,8 +4,6 @@ import pymonetdb
 from dfa_lib_python.task import Task
 from dfa_lib_python.dataset import DataSet
 from dfa_lib_python.element import Element
-import provenance.bert_pli_prospective as prospective
-from .bert_pli_retrospective import add_n_elements
 
 
 class DfanalyzerService:
@@ -15,10 +13,7 @@ class DfanalyzerService:
     USERNAME = "monetdb"
     PASSWORD = "monetdb"
 
-    def __init__(self, dataflow_name: str, bypass: bool = False):
-        self.dataflow_name = dataflow_name
-        self.dataflow = None
-        self.dependencies = {}
+    def __init__(self, bypass: bool = False):
         self.bypass = bypass
     
     def get_monet_connection(self):
@@ -31,75 +26,18 @@ class DfanalyzerService:
         )
         return conn
 
-    def update_custom_text_columns(self):
+    def dataflow_exists(self, dataflow_name : str) -> bool:
         if self.bypass: 
-            return
+            return False
 
         conn = self.get_monet_connection()
         cursor = conn.cursor()
-        already = False
-
-        while not already:
-            conn.commit()
-            cursor.execute("SELECT EXISTS (SELECT 1 FROM sys.tables WHERE name = 'ds_feature_vector' AND system = false);")
-            response = cursor.fetchone()[0]
-            if response:
-                already = True
-            else:
-                time.sleep(1)
-
-
-        changes = [
-            ['ds_doc1_segment', 'text' ],
-            ['ds_doc2_segment', 'text' ],
-            # ['ds_interaction_map', 'scores' ],
-            ['ds_feature_vector', 'idx' ],
-            ['ds_feature_vector', 'value' ],
-        ]
-
-        query = """
-            ALTER TABLE %s ADD COLUMN %s varchar(100000);
-            UPDATE %s SET %s = CONVERT(%s, varchar(100000));
-            DROP VIEW %s restrict;
-            ALTER TABLE %s DROP COLUMN %s restrict;
-            ALTER TABLE %s RENAME COLUMN %s TO %s;
-            CREATE VIEW %s AS SELECT * FROM %s;  
-        """
-        for change in changes:
-            ds_table = change[0]
-            column = change[1]
-            tmp_column = 'tmp_'+ column
-            view = ds_table.split('ds_')[1]
-            cursor.execute(query % ( ds_table, tmp_column, 
-                                    ds_table, tmp_column, column,
-                                    view,
-                                    ds_table, column,
-                                    ds_table, tmp_column, column,
-                                    view, ds_table,
-                                )
-                            )
-            conn.commit()
+        cursor.execute("SELECT id FROM dataflow WHERE tag = %s;", (dataflow_name,))
+        row = cursor.fetchone()
         cursor.close()
         conn.close()
 
-    def create_dataflow(self):
-        if self.bypass: 
-            return
-
-        conn = self.get_monet_connection()
-        cursor = conn.cursor()
-
-        # 1. Get df_id
-        cursor.execute("SELECT id FROM dataflow WHERE tag = %s;", (self.dataflow_name,))
-        row = cursor.fetchone()
-
-        if row is None:
-            self.dataflow = prospective.create_bert_pli_dataflow(
-                dataflow_tag=self.dataflow_name
-            )
-            self.dataflow.save()
-            self.update_custom_text_columns()
-
+        return row is not None
 
     def get_last_task_id(self, df_tag: str) -> int:
         if self.bypass: 
@@ -169,13 +107,15 @@ class DfanalyzerService:
 
         return last_identifier
 
-    def next_task_id(self) -> int:
+    def next_task_id(self, dataflow_tag : str) -> int:
         if self.bypass: 
             return
 
-        last_id = self.get_last_task_id(self.dataflow_name)
+        last_id = self.get_last_task_id(dataflow_tag)
         return last_id + 1
 
+
+############REMOVE BELOW####################
     def set_docs_pairs_generation_task(self, config, split):
         if self.bypass: 
             return

@@ -14,7 +14,9 @@ dt_bert_base = Set("bert_base", SetType.INPUT, [
 dt_entailment_config = Set("entailment_config", SetType.INPUT, [
     Attribute("config", AttributeType.TEXT)])
 dt_finetuned_bert = Set("finetuned_bert_model", SetType.OUTPUT, [
-    Attribute("last_checkpoint", AttributeType.FILE)])
+    Attribute("epoch", AttributeType.TEXT),
+    Attribute("checkpoint", AttributeType.FILE),
+    ])
 tf_finetune_bert.set_sets([dt_bert_base, dt_entailment_config, dt_finetuned_bert])
 df.add_transformation(tf_finetune_bert)
 
@@ -36,6 +38,7 @@ dt_finetuned_bert.dependency = tf_finetune_bert._tag
 dt_poolout_config = Set("poolout_config", SetType.INPUT, [
     Attribute("config", AttributeType.TEXT)])
 dt_poolout_data = Set("poolout_data", SetType.OUTPUT, [
+    Attribute("epoch", AttributeType.TEXT),
     Attribute("poolout_filepath", AttributeType.FILE),
     Attribute("selected_sentences_filepath", AttributeType.FILE)])
 tf_poolout.set_sets([dt_finetuned_bert, dt_coliee_parsed_dataset, dt_poolout_config, 
@@ -56,7 +59,9 @@ dt_parsed_poolout_data.dependency = tf_parse_poolout._tag
 dt_classifier_config = Set("classifier_config", SetType.INPUT, [
     Attribute("config", AttributeType.TEXT)])
 dt_classifier_model = Set("classifier_model", SetType.OUTPUT, [
-    Attribute("filepath", AttributeType.FILE)])
+    Attribute("epoch", AttributeType.TEXT),
+    Attribute("filepath", AttributeType.FILE),
+    Attribute("validation_metrics_filepath", AttributeType.FILE)])
 tf_train_classifier.set_sets([dt_parsed_poolout_data, dt_classifier_config, dt_classifier_model])
 df.add_transformation(tf_train_classifier)
 

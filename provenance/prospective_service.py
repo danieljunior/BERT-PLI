@@ -38,10 +38,10 @@ class ProspectiveService:
     DT_TRUE_LABELS = "true_labels"
     DT_METRICS = "metrics"
 
-    def __init__(self, tag: str = DEFAULT_DATAFLOW_TAG):
-        self.tag = tag
-        self.dataflow = Dataflow(self.tag)
-        self.persistence = PersistenceService(self.tag)
+    def __init__(self, dataflow_tag: str = DEFAULT_DATAFLOW_TAG, persistence_service: PersistenceService = None):
+        self.dataflow_tag = dataflow_tag
+        self.dataflow = Dataflow(self.dataflow_tag)
+        self.persistence_service = persistence_service
 
     def build_dataflow(self):
         tf_finetune_bert = Transformation(self.TF_FINETUNE_BERT)
@@ -50,7 +50,8 @@ class ProspectiveService:
         dt_entailment_config = Set(self.DT_ENTAILMENT_CONFIG, SetType.INPUT, [
             Attribute("config", AttributeType.TEXT)])
         dt_finetuned_bert = Set(self.DT_FINETUNED_BERT_MODEL, SetType.OUTPUT, [
-            Attribute("last_checkpoint", AttributeType.FILE)])
+            Attribute("epoch", AttributeType.TEXT),
+            Attribute("checkpoint", AttributeType.FILE)])
         tf_finetune_bert.set_sets([dt_bert_base, dt_entailment_config, dt_finetuned_bert])
         self.dataflow.add_transformation(tf_finetune_bert)
 
@@ -70,8 +71,11 @@ class ProspectiveService:
         dt_finetuned_bert.set_type(SetType.INPUT)
         dt_finetuned_bert.dependency = tf_finetune_bert._tag
         dt_poolout_config = Set(self.DT_POOLOUT_CONFIG, SetType.INPUT, [
-            Attribute("config", AttributeType.TEXT)])
+            Attribute("config", AttributeType.TEXT),
+            Attribute("checkpoint", AttributeType.FILE),
+            ])
         dt_poolout_data = Set(self.DT_POOLOUT_DATA, SetType.OUTPUT, [
+            Attribute("epoch", AttributeType.TEXT),
             Attribute("poolout_filepath", AttributeType.FILE),
             Attribute("selected_sentences_filepath", AttributeType.FILE)])
         tf_poolout.set_sets([dt_finetuned_bert, dt_coliee_parsed_dataset, dt_poolout_config,
@@ -92,7 +96,9 @@ class ProspectiveService:
         dt_classifier_config = Set(self.DT_CLASSIFIER_CONFIG, SetType.INPUT, [
             Attribute("config", AttributeType.TEXT)])
         dt_classifier_model = Set(self.DT_CLASSIFIER_MODEL, SetType.OUTPUT, [
-            Attribute("filepath", AttributeType.FILE)])
+            Attribute("epoch", AttributeType.TEXT),
+            Attribute("checkpoint", AttributeType.FILE),
+            Attribute("validation_metrics_filepath", AttributeType.TEXT),])
         tf_train_classifier.set_sets([dt_parsed_poolout_data, dt_classifier_config, dt_classifier_model])
         self.dataflow.add_transformation(tf_train_classifier)
 
@@ -125,7 +131,8 @@ class ProspectiveService:
         self.dataflow.add_transformation(tf_calculate_metrics)
 
         self.dataflow.save()
-        self.persistence.save_dataflow(self.DEFAULT_DATAFLOW_TAG, self.dataflow)
+        self.persistence_service.save_dataflow(self.dataflow_tag, self.dataflow)
+        return self.dataflow
 
 if __name__ == "__main__":
     service = ProspectiveService()

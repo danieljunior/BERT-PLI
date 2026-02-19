@@ -8,7 +8,7 @@ class PersistenceService:
     """Service for managing transformation and dependency provenance objects."""
     DEFAULT_STORAGE_DIR = '/app/provenance/storage'
 
-    def __init__(self, dataflow_tag : str, storage_dir: str = DEFAULT_STORAGE_DIR) -> None:
+    def __init__(self, storage_dir: str = DEFAULT_STORAGE_DIR) -> None:
         """
         Initialize the provenance service.
         
@@ -17,8 +17,6 @@ class PersistenceService:
         """
         self.storage_dir = Path(storage_dir)
         self.storage_dir.mkdir(parents=True, exist_ok=True)
-        self.dataflow_tag = dataflow_tag
-        self.dataflow = self.load_dataflow(dataflow_tag)
         self.dependencies_file = self.storage_dir / 'dependencies.bin'
         self.dependencies: Dict[str, Any] = self._load_dependencies()
     
@@ -92,14 +90,14 @@ class PersistenceService:
                 loaded[name] = task
         return loaded
 
-    def load_task_dependencies(self, task_name: str) -> Dict[str, Task]:
+    def load_task_dependencies(self, dataflow, task_name: str) -> Dict[str, Task]:
         """
         Load all dependencies for a given task.
         
         Args:
             task_name: Name of the task to load dependencies for
         """
-        tf = next(tf for tf in self.dataflow.transformations 
+        tf = next(tf for tf in dataflow.transformations 
                        if tf["tag"] == task_name)
         tf_dependencies = [ dp 
                             for dp 
@@ -121,36 +119,36 @@ class PersistenceService:
         self.dependencies = {}
         self._save_dependencies()
     
-    def save_dataflow(self, tag: str, dataflow: Dataflow) -> str:
+    def save_dataflow(self, dataflow_tag: str, dataflow: Dataflow) -> str:
         """
         Save a Dataflow object.
         
         Args:
-            tag: Unique identifier for the dataflow
+            dataflow_tag: Unique identifier for the dataflow
             dataflow: Dataflow object to save
             
         Returns:
             Path to the saved dataflow file
         """
-        dataflow_file = self.storage_dir / f'{tag}.bin'
+        dataflow_file = self.storage_dir / f'{dataflow_tag}.bin'
         with open(dataflow_file, 'wb') as f:
             pickle.dump(dataflow, f)
         
         return str(dataflow_file)
     
-    def load_dataflow(self, tag: str) -> Optional[Dataflow]:
+    def load_dataflow(self, dataflow_tag: str) -> Optional[Dataflow]:
         """
         Load a Dataflow object.
         
         Args:
-            tag: Unique identifier for the dataflow
+            dataflow_tag: Unique identifier for the dataflow
             
         Returns:
             Loaded Dataflow object or None if not found
         """
-        dataflow_file = self.storage_dir / f'{tag}.bin'
+        dataflow_file = self.storage_dir / f'{dataflow_tag}.bin'
         try:
             with open(dataflow_file, 'rb') as f:
                 return pickle.load(f)
         except FileNotFoundError:
-            raise FileNotFoundError(f"Dataflow with tag '{tag}' not found in storage.")
+            raise FileNotFoundError(f"Dataflow with tag '{dataflow_tag}' not found in storage.")

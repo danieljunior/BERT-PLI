@@ -1,21 +1,12 @@
-import pickle
-from dfa_lib_python.task import Task
-from dfa_lib_python.dataset import DataSet
-from dfa_lib_python.element import Element
-from persistence_service import PersistenceService
+import os
+import time
+
+from retrospective_service import RetrospectiveService
 from prospective_service import ProspectiveService
 
-prov_persistence = PersistenceService(ProspectiveService.DEFAULT_DATAFLOW_TAG)
-tf_dependencies_tasks = prov_persistence.load_task_dependencies(ProspectiveService.TF_PARSE_COLIEE_DATASET)
-
-parse_coliee_dataset = Task(2, ProspectiveService.DEFAULT_DATAFLOW_TAG, 
-                            ProspectiveService.TF_PARSE_COLIEE_DATASET,
-                            dependency=tf_dependencies_tasks)
-coliee_dataset = DataSet("coliee_dataset", [Element(["/path/to/coliee/path","train"])])
-parse_coliee_dataset.add_dataset(coliee_dataset)
-parse_coliee_dataset.begin()
-coliee_parsed_dataset = DataSet("coliee_parsed_dataset", [Element(["/path/to/coliee_parsed/path","train"])])
-parse_coliee_dataset.add_dataset(coliee_parsed_dataset)
-parse_coliee_dataset.end()
-
-prov_persistence.save_task(ProspectiveService.TF_PARSE_COLIEE_DATASET, parse_coliee_dataset)
+dataflow_tag = os.getenv('DATAFLOW_TAG', ProspectiveService.DEFAULT_DATAFLOW_TAG)
+provenance = RetrospectiveService(dataflow_tag)
+input_data = {"coliee_dataset": [["/path/to/coliee/path", "train"]]}
+with provenance.get_retrospective_data(ProspectiveService.TF_PARSE_COLIEE_DATASET, input_data) as result:
+    time.sleep(2)
+    result['coliee_parsed_dataset'] = [["/path/to/coliee_parsed/path", "train"]]

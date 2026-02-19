@@ -1,21 +1,16 @@
-import pickle
-from dfa_lib_python.task import Task
-from dfa_lib_python.dataset import DataSet
-from dfa_lib_python.element import Element
+import os
+import time
 
-from persistence_service import PersistenceService
+from retrospective_service import RetrospectiveService
 from prospective_service import ProspectiveService
 
-prov_persistence = PersistenceService(ProspectiveService.DEFAULT_DATAFLOW_TAG)
-tf_dependencies_tasks = prov_persistence.load_task_dependencies(ProspectiveService.TF_POOLOUT)
+dataflow_tag = os.getenv('DATAFLOW_TAG', ProspectiveService.DEFAULT_DATAFLOW_TAG)
+provenance = RetrospectiveService(dataflow_tag)
+input_data = {"poolout_config": [["config","finetuned_bert_checkpoint"]]}
 
-poolout = Task(3 , ProspectiveService.DEFAULT_DATAFLOW_TAG, 
-                    ProspectiveService.TF_POOLOUT,
-                    dependency=tf_dependencies_tasks)
-coliee_dataset = DataSet("poolout_config", [Element(["blablabla"])])
-poolout.add_dataset(coliee_dataset)
-poolout.begin()
-poolout_data = DataSet("poolout_data", [Element(["poolout_file","selected_sentences_file"])])
-poolout.add_dataset(poolout_data)
-poolout.end()
-prov_persistence.save_task(ProspectiveService.TF_POOLOUT, poolout)
+
+with provenance.get_retrospective_data(ProspectiveService.TF_POOLOUT, input_data) as result:
+    time.sleep(2)
+    result['poolout_data'] = [["1","poolout_file","selected_sentences_file"],
+                              ["2","poolout_file","selected_sentences_file"]]
+
