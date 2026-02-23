@@ -5,7 +5,7 @@ from dfa_lib_python.attribute_type import AttributeType
 from dfa_lib_python.set import Set
 from dfa_lib_python.set_type import SetType
 
-from persistence_service import PersistenceService
+from .persistence_service import PersistenceService
 
 class ProspectiveService:
 
@@ -57,10 +57,12 @@ class ProspectiveService:
 
         tf_parse_coliee = Transformation(self.TF_PARSE_COLIEE_DATASET)
         dt_coliee_dataset = Set(self.DT_COLIEE_DATASET, SetType.INPUT, [
-            Attribute("filepath", AttributeType.FILE),
+            Attribute("files_path", AttributeType.FILE),
+            Attribute("labels_file", AttributeType.FILE),
             Attribute("split_type", AttributeType.TEXT)])
         dt_coliee_parsed_dataset = Set(self.DT_COLIEE_PARSED_DATASET, SetType.OUTPUT, [
-            Attribute("filepath", AttributeType.FILE),
+            Attribute("vanilla_file", AttributeType.FILE),
+            Attribute("summarized_file", AttributeType.FILE),
             Attribute("split_type", AttributeType.TEXT)])
         tf_parse_coliee.set_sets([dt_coliee_dataset, dt_coliee_parsed_dataset])
         self.dataflow.add_transformation(tf_parse_coliee)

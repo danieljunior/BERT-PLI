@@ -7,6 +7,9 @@ from tools.init_tool import init_all
 from config_parser import create_config
 from tools.train_tool import train
 
+from provenance.retrospective_service import RetrospectiveService
+from provenance.prospective_service import ProspectiveService
+
 logging.basicConfig(format='%(asctime)s - %(levelname)s - %(name)s -   %(message)s',
                     datefmt='%m/%d/%Y %H:%M:%S',
                     level=logging.INFO)
@@ -44,6 +47,18 @@ if __name__ == "__main__":
         logger.error("CUDA is not available but specific gpu id")
         raise NotImplementedError
 
-    parameters = init_all(config, gpu_list, args.checkpoint, "train")
 
-    train(parameters, config, gpu_list)
+    dataflow_tag = os.getenv('DATAFLOW_TAG', ProspectiveService.DEFAULT_DATAFLOW_TAG)
+    provenance = RetrospectiveService(dataflow_tag)
+    bert_path = config.get("model", "bert_path")
+    entailment_config = None
+    with open(configFilePath, 'r', encoding='utf-8') as f:
+        entailment_config = f.read()
+    input_data = {"bert_base": [[bert_path]], 
+                "entailment_config": [[entailment_config]]}
+    
+    mode = "train"
+    parameters = init_all(config, gpu_list, args.checkpoint, mode)
+    with provenance.get_retrospective_data(ProspectiveService.TF_PARSE_COLIEE_DATASET, input_data) as result:
+        checkpoints_names = train(parameters, config, gpu_list)
+        result['finetuned_bert_model'] = checkpoints_names

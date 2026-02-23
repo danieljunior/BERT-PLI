@@ -1,3 +1,4 @@
+import os
 import json
 from pathlib import Path
 import random
@@ -10,8 +11,11 @@ from sumy.summarizers.text_rank import TextRankSummarizer as Summarizer
 from sumy.nlp.stemmers import Stemmer
 from sumy.utils import get_stop_words
 
+from provenance.retrospective_service import RetrospectiveService
+from provenance.prospective_service import ProspectiveService
+
 random.seed(42)
-nltk.download("punkt_tab")
+nltk.download("punkt")
 LANGUAGE = "english"
 
 def read_text_file(file_path):
@@ -132,12 +136,17 @@ def process_files(files_path, labels_file, output_file_vanilla, output_file_sumy
     print(f"Sumy output: {output_file_sumy}")
 
 def main():
-    files_path = "/app/data/COLIEE/task1_train_files_2024/task1_train_files_2024"
+    dataflow_tag = os.getenv('DATAFLOW_TAG', ProspectiveService.DEFAULT_DATAFLOW_TAG)
+    provenance = RetrospectiveService(dataflow_tag)
+
+    files_path = "/app/data/COLIEE/task1_train_files_2024/"
     labels_file = "/app/data/COLIEE/task1_train_labels_2024.json"
     output_file_vanilla = "/app/data/COLIEE/train_vanilla_sentences.json"
     output_file_sumy = "/app/data/COLIEE/train_summarized_sentences.json"
-
-    process_files(files_path, labels_file, output_file_vanilla, output_file_sumy)
+    input_data = {"coliee_dataset": [[files_path, labels_file, "train"]]}
+    with provenance.get_retrospective_data(ProspectiveService.TF_PARSE_COLIEE_DATASET, input_data) as result:
+        process_files(files_path, labels_file, output_file_vanilla, output_file_sumy)
+        result['coliee_parsed_dataset'] = [[output_file_vanilla, output_file_sumy, "train"]]
 
 if __name__ == "__main__":
     main()

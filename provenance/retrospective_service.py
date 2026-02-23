@@ -4,9 +4,9 @@ from contextlib import contextmanager
 from dfa_lib_python.task import Task
 from dfa_lib_python.dataset import DataSet
 from dfa_lib_python.element import Element
-from persistence_service import PersistenceService
-from prospective_service import ProspectiveService
-from dfanalyzer_service import DfanalyzerService
+from .persistence_service import PersistenceService
+from .prospective_service import ProspectiveService
+from .dfanalyzer_service import DfanalyzerService
 
 # Configure logger with custom formatter
 logger = logging.getLogger(__name__)
