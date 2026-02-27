@@ -145,7 +145,9 @@ def main():
     output_file_sumy = "/app/data/COLIEE/train_summarized_sentences.json"
     input_data = {"coliee_dataset": [[files_path, labels_file, "train"]]}
     with provenance.get_retrospective_data(ProspectiveService.TF_PARSE_COLIEE_DATASET, input_data) as result:
+
         process_files(files_path, labels_file, output_file_vanilla, output_file_sumy)
+
         result['coliee_parsed_dataset'] = [[output_file_vanilla, output_file_sumy, "train"]]
 
 if __name__ == "__main__":

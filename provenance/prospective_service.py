@@ -22,8 +22,7 @@ class ProspectiveService:
     TF_CALCULATE_METRICS = "calculate_metrics"
 
     # Set name constants
-    DT_BERT_BASE = "bert_base"
-    DT_ENTAILMENT_CONFIG = "entailment_config"
+    DT_FINETUNE_CONFIG = "entailment_config"
     DT_FINETUNED_BERT_MODEL = "finetuned_bert_model"
     DT_COLIEE_DATASET = "coliee_dataset"
     DT_COLIEE_PARSED_DATASET = "coliee_parsed_dataset"
@@ -45,14 +44,13 @@ class ProspectiveService:
 
     def build_dataflow(self):
         tf_finetune_bert = Transformation(self.TF_FINETUNE_BERT)
-        dt_bert_base = Set(self.DT_BERT_BASE, SetType.INPUT, [
+        dt_finetuned_config = Set(self.DT_FINETUNE_CONFIG, SetType.INPUT, [
+            Attribute("config", AttributeType.TEXT),
             Attribute("checkpoint", AttributeType.FILE)])
-        dt_entailment_config = Set(self.DT_ENTAILMENT_CONFIG, SetType.INPUT, [
-            Attribute("config", AttributeType.TEXT)])
         dt_finetuned_bert = Set(self.DT_FINETUNED_BERT_MODEL, SetType.OUTPUT, [
             Attribute("epoch", AttributeType.TEXT),
             Attribute("checkpoint", AttributeType.FILE)])
-        tf_finetune_bert.set_sets([dt_bert_base, dt_entailment_config, dt_finetuned_bert])
+        tf_finetune_bert.set_sets([dt_finetuned_config, dt_finetuned_bert])
         self.dataflow.add_transformation(tf_finetune_bert)
 
         tf_parse_coliee = Transformation(self.TF_PARSE_COLIEE_DATASET)

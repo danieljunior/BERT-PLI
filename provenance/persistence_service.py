@@ -6,16 +6,16 @@ from dfa_lib_python.dataflow import Dataflow
 
 class PersistenceService:
     """Service for managing transformation and dependency provenance objects."""
-    DEFAULT_STORAGE_DIR = '/app/provenance/storage'
+    DEFAULT_STORAGE_DIR = '/app/provenance/storage/'
 
-    def __init__(self, storage_dir: str = DEFAULT_STORAGE_DIR) -> None:
+    def __init__(self, dataflow_storage_dir: str = 'dataflow') -> None:
         """
         Initialize the provenance service.
         
         Args:
             storage_dir: Directory where provenance files will be stored
         """
-        self.storage_dir = Path(storage_dir)
+        self.storage_dir = Path(self.DEFAULT_STORAGE_DIR + dataflow_storage_dir)
         self.storage_dir.mkdir(parents=True, exist_ok=True)
         self.dependencies_file = self.storage_dir / 'dependencies.bin'
         self.dependencies: Dict[str, Any] = self._load_dependencies()

@@ -27,6 +27,8 @@ run_command() {
     fi
 }
 
+
+
 # Run the first command
 run_command "python3 poolout.py -c $CONFIG1 -g $GPU1 --checkpoint $CHECKPOINT1 --result $RESULT1" "poolout.py"
 

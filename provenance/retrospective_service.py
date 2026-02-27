@@ -21,13 +21,14 @@ class RetrospectiveService:
     def __init__(self, dataflow_tag : str):
         self.dataflow_tag = dataflow_tag
         self.dfanalyzer_service = DfanalyzerService()
-        self.persistence_service = PersistenceService()
+        self.persistence_service = PersistenceService(dataflow_tag)
         
         if not self.dfanalyzer_service.dataflow_exists(self.dataflow_tag):
             self.prospective_service = ProspectiveService(self.dataflow_tag, self.persistence_service)
             self.dataflow = self.prospective_service.build_dataflow()
         else:
             self.dataflow = self.persistence_service.load_dataflow(self.dataflow_tag)
+        self.dfanalyzer_service.update_custom_text_columns()
 
     @contextmanager
     def get_retrospective_data(self, task_name:str, input_data:dict):
@@ -37,15 +38,16 @@ class RetrospectiveService:
             logger.info(f"[{task_name}] Starting task with input data: {input_data}")
             
             task_dependencies = self.persistence_service.load_task_dependencies(self.dataflow, task_name)
-
             self.task = Task(self.dfanalyzer_service.next_task_id(self.dataflow_tag), 
                         self.dataflow_tag, task_name,
                         dependency=task_dependencies)
             # input_data must be in the form of a dictionary where keys are dataset names and 
             # values are the dataset values
             # Ex.: {"dataset1": [[1,2,3]], "dataset2": [["a", "b", "c"]]}
+
             for dt_name, dt_values in input_data.items():
                 for elem in dt_values:
+
                     input_dataset = DataSet(dt_name, [Element(elem)])
                     self.task.add_dataset(input_dataset)
                     self.task.save()

@@ -11,6 +11,9 @@ from tools.init_tool import init_all
 from tools.poolout_tool import pool_out
 from config_parser import create_config
 
+from provenance.retrospective_service import RetrospectiveService
+from provenance.prospective_service import ProspectiveService
+
 logging.basicConfig(format='%(asctime)s - %(levelname)s - %(name)s -   %(message)s',
                     datefmt='%m/%d/%Y %H:%M:%S',
                     level=logging.INFO)
@@ -50,18 +53,28 @@ if __name__ == "__main__":
         logger.error("CUDA is not available but specific gpu id")
         raise NotImplementedError
 
-    parameters = init_all(config, gpu_list, args.checkpoint, "poolout")
+    dataflow_tag = os.getenv('DATAFLOW_TAG', ProspectiveService.DEFAULT_DATAFLOW_TAG)
+    provenance = RetrospectiveService(dataflow_tag)
+    poolout_config = None
+    with open(configFilePath, 'r', encoding='utf-8') as f:
+        poolout_config = f.read()
+    input_data = {ProspectiveService.DT_POOLOUT_CONFIG: [[poolout_config, args.checkpoint]],}
+    with provenance.get_retrospective_data(ProspectiveService.TF_POOLOUT, input_data) as result:
 
-    out_file = open(args.result, 'w', encoding='utf-8')
-    outputs = pool_out(parameters, config, gpu_list, args.result)
-    logger.info(f"Total number of outputs: {outputs}")
-    for output in outputs:
-        tmp_dict = {
-            'id_': output[0],
-            'res': output[1]
-        }
-        out_line = json.dumps(tmp_dict, ensure_ascii=False) + '\n'
-        out_file.write(out_line)
-    out_file.close()
+        parameters = init_all(config, gpu_list, args.checkpoint, "poolout")
 
+        out_file = open(args.result, 'w', encoding='utf-8')
+        outputs = pool_out(parameters, config, gpu_list, args.result)
+        logger.info(f"Total number of outputs: {outputs}")
+        for output in outputs:
+            tmp_dict = {
+                'id_': output[0],
+                'res': output[1]
+            }
+            out_line = json.dumps(tmp_dict, ensure_ascii=False) + '\n'
+            out_file.write(out_line)
+        out_file.close()
+        
+        sentences_file = config.get("data", "test_data_path") + "/" + config.get("data", "test_file_list")
+        result['poolout_data'] = [["1", args.result, sentences_file]]
     # train(parameters, config, gpu_list)
