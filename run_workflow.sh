@@ -26,10 +26,13 @@ fi
 : "${FINETUNE_CONFIG:?Missing FINETUNE_CONFIG in .env}"
 : "${POOLOUT_CONFIG:?Missing POOLOUT_CONFIG in .env}"
 : "${POOLOUT_GPU:?Missing POOLOUT_GPU in .env}"
+: "${POOLOUT_TEST_CONFIG:?Missing POOLOUT_TEST_CONFIG in .env}"
 : "${BERT_CHECKPOINT:?Missing BERT_CHECKPOINT in .env}"
 : "${POOLOUT_RESULT:?Missing POOLOUT_RESULT in .env}"
+: "${POOLOUT_TEST_RESULT:?Missing POOLOUT_TEST_RESULT in .env}"
 : "${PAIRS_DATA:?Missing PAIRS_DATA in .env}"
 : "${TRAIN_DATA:?Missing TRAIN_DATA in .env}"
+: "${TEST_DATA:?Missing TEST_DATA in .env}"
 : "${LSTM_CONFIG:?Missing LSTM_CONFIG in .env}"
 : "${LSTM_GPU:?Missing LSTM_GPU in .env}"
 : "${LSTM_CHECKPOINT:?Missing LSTM_CHECKPOINT in .env}"
@@ -55,13 +58,19 @@ run_command() {
     fi
 }
 
-run_command "python3 coliee_to_sts_parser.py" "coliee_to_sts_parser.py"
+run_command "python3 coliee_to_sts_parser.py -p /app/data/COLIEE/task1_test_files_2024/ -l /app/data/COLIEE/task1_train_labels_2024.json -vo /app/data/COLIEE/train_vanilla_sentences.json -so /app/data/COLIEE/train_summarized_sentences.json" "coliee_to_sts_parser.py"
+
+run_command "python3 coliee_to_sts_parser.py -p /app/data/COLIEE/task1_test_files_2024/ -l /app/data/COLIEE/task1_test_labels_2024.json -vo /app/data/COLIEE/test_vanilla_sentences.json -so /app/data/COLIEE/test_summarized_sentences.json --test" "coliee_to_sts_parser.py (test)"
 
 run_command "python3 train.py -c $FINETUNE_CONFIG -g 0" "train.py (finetune)"
 
 run_command "python3 poolout.py -c $POOLOUT_CONFIG -g $POOLOUT_GPU --checkpoint $BERT_CHECKPOINT --result $POOLOUT_RESULT" "poolout.py"
 
 run_command "python3 poolout_to_train.py -in $PAIRS_DATA -out $POOLOUT_RESULT --result $TRAIN_DATA" "poolout_to_train.py"
+
+run_command "python3 poolout.py -c $POOLOUT_TEST_CONFIG -g $POOLOUT_GPU --checkpoint $BERT_CHECKPOINT --result $POOLOUT_TEST_RESULT --test" "poolout.py"
+
+run_command "python3 poolout_to_train.py -in $PAIRS_DATA -out $POOLOUT_TEST_RESULT --result $TEST_DATA --test" "poolout_to_train.py"
 
 run_command "python3 train.py -c $LSTM_CONFIG -g $LSTM_GPU" "train.py (lstm)"
 

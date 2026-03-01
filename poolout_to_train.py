@@ -56,14 +56,22 @@ if __name__ == "__main__":
     parser.add_argument('--paras-file', '-in', help="input paragraphs file", required=True)
     parser.add_argument('--poolout-file', '-out', help="poolout file", required=True)
     parser.add_argument('--result', help="result file path", required=True)
+    parser.add_argument('--test', help="test mode", action='store_true')
+
     args = parser.parse_args()
     
     dataflow_tag = os.getenv('DATAFLOW_TAG', ProspectiveService.DEFAULT_DATAFLOW_TAG)
     provenance = RetrospectiveService(dataflow_tag)
     input_data = {}
-    with provenance.get_retrospective_data(ProspectiveService.TF_PARSE_POOLOUT, input_data) as result:
+    if args.test:
+        task = ProspectiveService.TF_TEST_PARSE_POOLOUT
+        result_key = ProspectiveService.DT_TEST_PARSED_POOLOUT_DATA
+    else:
+        task = ProspectiveService.TF_TRAIN_PARSE_POOLOUT
+        result_key = ProspectiveService.DT_TRAIN_PARSED_POOLOUT_DATA
+    with provenance.get_retrospective_data(task, input_data) as result:
 
         process_files(args.paras_file, args.poolout_file, args.result)
-        result[ProspectiveService.DT_PARSED_POOLOUT_DATA] = [[args.result]]
+        result[result_key] = [[args.result]]
 
     logger.info("Processing completed")

@@ -126,8 +126,9 @@ class DfanalyzerService:
 
         changes = [
             ['ds_entailment_config', 'config' ],
-            ['ds_poolout_config', 'config' ],
-            ['ds_test_config', 'config' ],
+            ['ds_train_poolout_config', 'config' ],
+            ['ds_test_poolout_config', 'config' ],
+            ['ds_evaluate_config', 'config' ],
             ['ds_classifier_config', 'config' ],
         ]
 

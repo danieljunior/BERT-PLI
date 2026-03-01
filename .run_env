@@ -10,12 +10,14 @@ POOLOUT_CONFIG=config/nlp/BertPoolOutMax.config
 POOLOUT_GPU=0
 BERT_CHECKPOINT=output/checkpoints/bert_finetuned/1.pkl
 POOLOUT_RESULT=output/results/vanilla/poolout_max.json
-
+POOLOUT_TEST_CONFIG=config/nlp/BertPoolOutMax.config
+POOLOUT_TEST_RESULT=output/results/vanilla/poolout_max_test.json
 # -----------------------------
 # Data conversion
 # -----------------------------
 PAIRS_DATA=data/tiny_sample_train.json
 TRAIN_DATA=output/results/vanilla/train_poolout.json
+TEST_DATA=output/results/vanilla/test_poolout.json
 
 # -----------------------------
 # LSTM stage

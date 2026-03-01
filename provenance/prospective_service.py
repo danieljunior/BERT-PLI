@@ -13,27 +13,35 @@ class ProspectiveService:
 
     # Transformation name constants
     TF_FINETUNE_BERT = "finetune_bert"
-    TF_PARSE_COLIEE_DATASET = "parse_coliee_dataset"
-    TF_POOLOUT = "poolout"
-    TF_PARSE_POOLOUT = "parse_poolout"
+    TF_TRAIN_PARSE_COLIEE_DATASET = "parse_train_coliee_dataset"
+    TF_TRAIN_POOLOUT = "poolout_train"
+    TF_TRAIN_PARSE_POOLOUT = "parse_train_poolout"
+    TF_TEST_PARSE_COLIEE_DATASET = "parse_coliee_test_dataset"
+    TF_TEST_POOLOUT = "poolout_test"
+    TF_TEST_PARSE_POOLOUT = "parse_test_poolout"
     TF_TRAIN_CLASSIFIER = "train_classifier"
-    TF_TEST_CLASSIFIER = "test_classifier"
+    TF_TEST_CLASSIFIER = "evaluate"
     TF_PARSE_RESULTS = "parse_results"
     TF_CALCULATE_METRICS = "calculate_metrics"
 
     # Set name constants
     DT_FINETUNE_CONFIG = "entailment_config"
     DT_FINETUNED_BERT_MODEL = "finetuned_bert_model"
-    DT_COLIEE_DATASET = "coliee_dataset"
-    DT_COLIEE_PARSED_DATASET = "coliee_parsed_dataset"
-    DT_POOLOUT_CONFIG = "poolout_config"
-    DT_POOLOUT_DATA = "poolout_data"
-    DT_PARSED_POOLOUT_DATA = "parsed_poolout_data"
+    DT_TRAIN_COLIEE_DATASET = "train_coliee_dataset"
+    DT_TRAIN_COLIEE_PARSED_DATASET = "parsed_train_coliee_dataset"
+    DT_TRAIN_POOLOUT_CONFIG = "train_poolout_config"
+    DT_TRAIN_POOLOUT_DATA = "train_poolout_data"
+    DT_TRAIN_PARSED_POOLOUT_DATA = "parsed_train_poolout_data"
+    DT_TEST_COLIEE_DATASET = "test_coliee_dataset"
+    DT_TEST_COLIEE_PARSED_DATASET = "parsed_test_coliee_dataset"
+    DT_TEST_POOLOUT_CONFIG = "test_poolout_config"
+    DT_TEST_POOLOUT_DATA = "test_poolout_data"
+    DT_TEST_PARSED_POOLOUT_DATA = "parsed_test_poolout_data"
     DT_CLASSIFIER_CONFIG = "classifier_config"
     DT_CLASSIFIER_MODEL = "classifier_model"
-    DT_TEST_CONFIG = "test_config"
-    DT_TEST_RESULTS = "test_results"
-    DT_PARSED_TEST_RESULTS = "parsed_test_results"
+    DT_TEST_CONFIG = "evaluate_config"
+    DT_TEST_RESULTS = "results"
+    DT_PARSED_TEST_RESULTS = "parsed_results"
     DT_TRUE_LABELS = "true_labels"
     DT_METRICS = "metrics"
 
@@ -53,28 +61,28 @@ class ProspectiveService:
         tf_finetune_bert.set_sets([dt_finetuned_config, dt_finetuned_bert])
         self.dataflow.add_transformation(tf_finetune_bert)
 
-        tf_parse_coliee = Transformation(self.TF_PARSE_COLIEE_DATASET)
-        dt_coliee_dataset = Set(self.DT_COLIEE_DATASET, SetType.INPUT, [
+        tf_parse_coliee = Transformation(self.TF_TRAIN_PARSE_COLIEE_DATASET)
+        dt_coliee_dataset = Set(self.DT_TRAIN_COLIEE_DATASET, SetType.INPUT, [
             Attribute("files_path", AttributeType.FILE),
             Attribute("labels_file", AttributeType.FILE),
             Attribute("split_type", AttributeType.TEXT)])
-        dt_coliee_parsed_dataset = Set(self.DT_COLIEE_PARSED_DATASET, SetType.OUTPUT, [
+        dt_coliee_parsed_dataset = Set(self.DT_TRAIN_COLIEE_PARSED_DATASET, SetType.OUTPUT, [
             Attribute("vanilla_file", AttributeType.FILE),
             Attribute("summarized_file", AttributeType.FILE),
             Attribute("split_type", AttributeType.TEXT)])
         tf_parse_coliee.set_sets([dt_coliee_dataset, dt_coliee_parsed_dataset])
         self.dataflow.add_transformation(tf_parse_coliee)
 
-        tf_poolout = Transformation(self.TF_POOLOUT)
+        tf_poolout = Transformation(self.TF_TRAIN_POOLOUT)
         dt_coliee_parsed_dataset.set_type(SetType.INPUT)
         dt_coliee_parsed_dataset.dependency = tf_parse_coliee._tag
         dt_finetuned_bert.set_type(SetType.INPUT)
         dt_finetuned_bert.dependency = tf_finetune_bert._tag
-        dt_poolout_config = Set(self.DT_POOLOUT_CONFIG, SetType.INPUT, [
+        dt_poolout_config = Set(self.DT_TRAIN_POOLOUT_CONFIG, SetType.INPUT, [
             Attribute("config", AttributeType.TEXT),
             Attribute("checkpoint", AttributeType.FILE),
             ])
-        dt_poolout_data = Set(self.DT_POOLOUT_DATA, SetType.OUTPUT, [
+        dt_poolout_data = Set(self.DT_TRAIN_POOLOUT_DATA, SetType.OUTPUT, [
             Attribute("epoch", AttributeType.TEXT),
             Attribute("poolout_filepath", AttributeType.FILE),
             Attribute("selected_sentences_filepath", AttributeType.FILE)])
@@ -82,10 +90,10 @@ class ProspectiveService:
                              dt_poolout_data])
         self.dataflow.add_transformation(tf_poolout)
 
-        tf_parse_poolout = Transformation(self.TF_PARSE_POOLOUT)
+        tf_parse_poolout = Transformation(self.TF_TRAIN_PARSE_POOLOUT)
         dt_poolout_data.set_type(SetType.INPUT)
         dt_poolout_data.dependency = tf_poolout._tag
-        dt_parsed_poolout_data = Set(self.DT_PARSED_POOLOUT_DATA, SetType.OUTPUT, [
+        dt_parsed_poolout_data = Set(self.DT_TRAIN_PARSED_POOLOUT_DATA, SetType.OUTPUT, [
             Attribute("filepath", AttributeType.FILE)])
         tf_parse_poolout.set_sets([dt_poolout_data, dt_parsed_poolout_data])
         self.dataflow.add_transformation(tf_parse_poolout)
@@ -102,7 +110,46 @@ class ProspectiveService:
         tf_train_classifier.set_sets([dt_parsed_poolout_data, dt_classifier_config, dt_classifier_model])
         self.dataflow.add_transformation(tf_train_classifier)
 
+        tf_test_parse_coliee = Transformation(self.TF_TEST_PARSE_COLIEE_DATASET)
+        dt_test_coliee_dataset = Set(self.DT_TEST_COLIEE_DATASET, SetType.INPUT, [
+            Attribute("files_path", AttributeType.FILE),
+            Attribute("labels_file", AttributeType.FILE),
+            Attribute("split_type", AttributeType.TEXT)])
+        dt_test_coliee_parsed_dataset = Set(self.DT_TEST_COLIEE_PARSED_DATASET, SetType.OUTPUT, [
+            Attribute("vanilla_file", AttributeType.FILE),
+            Attribute("summarized_file", AttributeType.FILE),
+            Attribute("split_type", AttributeType.TEXT)])
+        tf_test_parse_coliee.set_sets([dt_test_coliee_dataset, dt_test_coliee_parsed_dataset])
+        self.dataflow.add_transformation(tf_test_parse_coliee)
+
+        tf_test_poolout = Transformation(self.TF_TEST_POOLOUT)
+        dt_test_coliee_parsed_dataset.set_type(SetType.INPUT)
+        dt_test_coliee_parsed_dataset.dependency = tf_test_parse_coliee._tag
+        dt_finetuned_bert.set_type(SetType.INPUT)
+        dt_finetuned_bert.dependency = tf_finetune_bert._tag
+        dt_test_poolout_config = Set(self.DT_TEST_POOLOUT_CONFIG, SetType.INPUT, [
+            Attribute("config", AttributeType.TEXT),
+            Attribute("checkpoint", AttributeType.FILE),
+            ])
+        dt_test_poolout_data = Set(self.DT_TEST_POOLOUT_DATA, SetType.OUTPUT, [
+            Attribute("epoch", AttributeType.TEXT),
+            Attribute("poolout_filepath", AttributeType.FILE),
+            Attribute("selected_sentences_filepath", AttributeType.FILE)])
+        tf_test_poolout.set_sets([dt_finetuned_bert, dt_test_coliee_parsed_dataset, dt_test_poolout_config,
+                             dt_test_poolout_data])
+        self.dataflow.add_transformation(tf_test_poolout)
+
+        tf_test_parse_poolout = Transformation(self.TF_TEST_PARSE_POOLOUT)
+        dt_test_poolout_data.set_type(SetType.INPUT)
+        dt_test_poolout_data.dependency = tf_test_poolout._tag
+        dt_test_parsed_poolout_data = Set(self.DT_TEST_PARSED_POOLOUT_DATA, SetType.OUTPUT, [
+            Attribute("filepath", AttributeType.FILE)])
+        tf_test_parse_poolout.set_sets([dt_test_poolout_data, dt_test_parsed_poolout_data])
+        self.dataflow.add_transformation(tf_test_parse_poolout)
+
         tf_test = Transformation(self.TF_TEST_CLASSIFIER)
+        dt_test_parsed_poolout_data.set_type(SetType.INPUT)
+        dt_test_parsed_poolout_data.dependency = tf_test_parse_poolout._tag
         dt_classifier_model.set_type(SetType.INPUT)
         dt_classifier_model.dependency = tf_train_classifier._tag
         dt_test_config = Set(self.DT_TEST_CONFIG, SetType.INPUT, [
@@ -110,7 +157,7 @@ class ProspectiveService:
             Attribute("checkpoint", AttributeType.FILE)])
         dt_test_results = Set(self.DT_TEST_RESULTS, SetType.OUTPUT, [
             Attribute("filepath", AttributeType.FILE)])
-        tf_test.set_sets([dt_classifier_model, dt_test_config, dt_coliee_parsed_dataset, dt_test_results])
+        tf_test.set_sets([dt_test_parsed_poolout_data, dt_classifier_model, dt_test_config, dt_test_results])
         self.dataflow.add_transformation(tf_test)
 
         tf_parse_results = Transformation(self.TF_PARSE_RESULTS)

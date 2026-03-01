@@ -26,8 +26,12 @@ if __name__ == "__main__":
     parser.add_argument('--gpu', '-g', help="gpu id list")
     parser.add_argument('--checkpoint', help="checkpoint file path")
     parser.add_argument('--result', help="result file path", required=True)
+    parser.add_argument('--test', help="test mode", action='store_true')
     args = parser.parse_args()
 
+    if os.path.exists(args.result):
+        logger.info(f"Result file already exists: {args.result}")
+        exit(0)
 
     configFilePath = args.config
 
@@ -58,8 +62,16 @@ if __name__ == "__main__":
     poolout_config = None
     with open(configFilePath, 'r', encoding='utf-8') as f:
         poolout_config = f.read()
-    input_data = {ProspectiveService.DT_POOLOUT_CONFIG: [[poolout_config, args.checkpoint]],}
-    with provenance.get_retrospective_data(ProspectiveService.TF_POOLOUT, input_data) as result:
+    if args.test:
+        dataset = ProspectiveService.DT_TEST_POOLOUT_CONFIG
+        task = ProspectiveService.TF_TEST_POOLOUT
+        result_key = ProspectiveService.DT_TEST_POOLOUT_DATA
+    else:
+        dataset = ProspectiveService.DT_TRAIN_POOLOUT_CONFIG
+        task = ProspectiveService.TF_TRAIN_POOLOUT
+        result_key = ProspectiveService.DT_TRAIN_POOLOUT_DATA
+    input_data = {dataset: [[poolout_config, args.checkpoint]],}
+    with provenance.get_retrospective_data(task, input_data) as result:
 
         parameters = init_all(config, gpu_list, args.checkpoint, "poolout")
 
@@ -76,6 +88,6 @@ if __name__ == "__main__":
         out_file.close()
         
         sentences_file = config.get("data", "test_data_path") + "/" + config.get("data", "test_file_list")
-        result[ProspectiveService.DT_POOLOUT_DATA] = [["1", args.result, sentences_file]]
+        result[result_key] = [["1", args.result, sentences_file]]
     # train(parameters, config, gpu_list)
     logger.info("Poolout completed")
