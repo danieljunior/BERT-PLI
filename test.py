@@ -72,4 +72,4 @@ if __name__ == "__main__":
         else:
             json.dump(test(parameters, config, gpu_list), open(args.result, "w", encoding="utf8"), ensure_ascii=False,
                     sort_keys=True, indent=2)
-        result[ProspectiveService.DT_TEST_RESULTS] = args.result
+        result[ProspectiveService.DT_TEST_RESULTS] = [[args.result]]

@@ -64,6 +64,6 @@ if __name__ == "__main__":
     with provenance.get_retrospective_data(ProspectiveService.TF_PARSE_POOLOUT, input_data) as result:
 
         process_files(args.paras_file, args.poolout_file, args.result)
-        result[ProspectiveService.DT_PARSED_POOLOUT_DATA] = args.result
+        result[ProspectiveService.DT_PARSED_POOLOUT_DATA] = [[args.result]]
 
     logger.info("Processing completed")

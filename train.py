@@ -71,6 +71,9 @@ if __name__ == "__main__":
         results = train(parameters, config, gpu_list)
         if config.get("model", "model_name") == 'BertPoint':
             results = [item[:2] for item in results]
+        # results = [['1', '/app/output/checkpoints/classifier/1.pkl', 'validation_1.json'],
+        #             ['2', '/app/output/checkpoints/classifier/2.pkl', 'validation_2.json']]
+       
         # finetunebert
         #  results = [['1', '/app/output/checkpoints/bert_finetuned/1.pkl'],
         #                      ['2', '/app/output/checkpoints/bert_finetuned/2.pkl']]

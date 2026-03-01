@@ -225,16 +225,14 @@ if __name__ == "__main__":
         with provenance.get_retrospective_data(ProspectiveService.TF_CALCULATE_METRICS, 
                                                input_data) as result:
             evaluate_predictions(labels_file, predicted_file, output_file)
-            result[ProspectiveService.DT_METRICS] = output_file
+            result[ProspectiveService.DT_METRICS] = [[output_file]]
 
     elif len(sys.argv) > 1 and sys.argv[1] == "parse":
         if len(sys.argv) < 3:
             print("Usage: python parse_results.py parse <input.json> <output.json>")
             sys.exit(1)
-        input_file = sys.argv[2]
-        output_file = sys.argv[3]
-        # input_file = "output/results/gru_results.json"
-        # output_file = "output/results/gru_parsed_result.json"
+        input_file = sys.argv[2] # input_file = "output/results/gru_results.json"
+        output_file = sys.argv[3] # output_file = "output/results/gru_parsed_result.json"
         
         # Create output directory if it doesn't exist
         os.makedirs(os.path.dirname(output_file), exist_ok=True)
@@ -242,4 +240,4 @@ if __name__ == "__main__":
         with provenance.get_retrospective_data(ProspectiveService.TF_PARSE_RESULTS, 
                                                input_data) as result:
             parse_gru_results(input_file, output_file)
-            result[ProspectiveService.DT_PARSED_TEST_RESULTS] = output_file
+            result[ProspectiveService.DT_PARSED_TEST_RESULTS] = [[output_file]]

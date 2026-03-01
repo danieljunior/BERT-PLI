@@ -78,3 +78,4 @@ if __name__ == "__main__":
         sentences_file = config.get("data", "test_data_path") + "/" + config.get("data", "test_file_list")
         result[ProspectiveService.DT_POOLOUT_DATA] = [["1", args.result, sentences_file]]
     # train(parameters, config, gpu_list)
+    logger.info("Poolout completed")
