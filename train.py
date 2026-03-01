@@ -51,17 +51,30 @@ if __name__ == "__main__":
 
     dataflow_tag = os.getenv('DATAFLOW_TAG', ProspectiveService.DEFAULT_DATAFLOW_TAG)
     provenance = RetrospectiveService(dataflow_tag)
-    bert_path = config.get("model", "bert_path")
-    entailment_config = None
+    config_file = None
     with open(configFilePath, 'r', encoding='utf-8') as f:
-        entailment_config = f.read()
-    input_data = {ProspectiveService.DT_FINETUNE_CONFIG: [[entailment_config, bert_path]]}
+        config_file = f.read()
+    input_data = {}
+    task = None
+    if config.get("model", "model_name") == 'BertPoint':
+        task = ProspectiveService.TF_FINETUNE_BERT
+        bert_path = config.get("model", "bert_path")
+        input_data = {ProspectiveService.DT_FINETUNE_CONFIG: [[config_file, bert_path]]}
+        output_data = ProspectiveService.DT_FINETUNED_BERT_MODEL
+    else:
+        task = ProspectiveService.TF_TRAIN_CLASSIFIER
+        input_data = {ProspectiveService.DT_CLASSIFIER_CONFIG: [[config_file]]}
+        output_data = ProspectiveService.DT_CLASSIFIER_MODEL
+    with provenance.get_retrospective_data(task, input_data) as result:
 
-    with provenance.get_retrospective_data(ProspectiveService.TF_FINETUNE_BERT, input_data) as result:
-        
         parameters = init_all(config, gpu_list, args.checkpoint, mode)
-        checkpoints_names = train(parameters, config, gpu_list)
-        # checkpoints_names = [['1', '/app/output/checkpoints/bert_finetuned/1.pkl'],
+        results = train(parameters, config, gpu_list)
+        if config.get("model", "model_name") == 'BertPoint':
+            results = [item[:2] for item in results]
+        # finetunebert
+        #  results = [['1', '/app/output/checkpoints/bert_finetuned/1.pkl'],
         #                      ['2', '/app/output/checkpoints/bert_finetuned/2.pkl']]
-        
-        result['finetuned_bert_model'] = checkpoints_names
+        # train_classifier
+        #  results = [['1', '/app/output/checkpoints/classifier/1.pkl', 'validation_1.json'],
+#                      ['2', '/app/output/checkpoints/classifier/2.pkl', 'validation_2.json']]
+        result[output_data] = results

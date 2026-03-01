@@ -76,5 +76,5 @@ if __name__ == "__main__":
         out_file.close()
         
         sentences_file = config.get("data", "test_data_path") + "/" + config.get("data", "test_file_list")
-        result['poolout_data'] = [["1", args.result, sentences_file]]
+        result[ProspectiveService.DT_POOLOUT_DATA] = [["1", args.result, sentences_file]]
     # train(parameters, config, gpu_list)

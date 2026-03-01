@@ -106,7 +106,8 @@ class ProspectiveService:
         dt_classifier_model.set_type(SetType.INPUT)
         dt_classifier_model.dependency = tf_train_classifier._tag
         dt_test_config = Set(self.DT_TEST_CONFIG, SetType.INPUT, [
-            Attribute("config", AttributeType.TEXT)])
+            Attribute("config", AttributeType.TEXT),
+            Attribute("checkpoint", AttributeType.FILE)])
         dt_test_results = Set(self.DT_TEST_RESULTS, SetType.OUTPUT, [
             Attribute("filepath", AttributeType.FILE)])
         tf_test.set_sets([dt_classifier_model, dt_test_config, dt_coliee_parsed_dataset, dt_test_results])

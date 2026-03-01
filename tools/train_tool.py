@@ -125,7 +125,6 @@ def train(parameters, config, gpu_list):
         checkpoint_name = os.path.join(output_path, "%d.pkl" % current_epoch)
         checkpoint(checkpoint_name, model, optimizer, current_epoch, config,
                    global_step)
-        checkpoints.append([current_epoch, checkpoint_name])
 
         writer.add_scalar(config.get("output", "model_name") + "_train_epoch", float(total_loss) / (step + 1),
                           current_epoch)
@@ -134,5 +133,6 @@ def train(parameters, config, gpu_list):
             with torch.no_grad():
                 eval_res = valid(model, parameters["valid_dataset"], current_epoch, writer, config, gpu_list,
                                  output_function)
+                checkpoints.append([current_epoch, checkpoint_name, json.dumps(eval_res)])
 
     return checkpoints

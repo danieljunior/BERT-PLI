@@ -1,10 +1,15 @@
 # -*- coding: utf-8 -*-
 __author__ = 'yshao'
 
+import os
 import argparse
 import json
 import logging
 from tqdm import tqdm
+
+from provenance.retrospective_service import RetrospectiveService
+from provenance.prospective_service import ProspectiveService
+
 logging.basicConfig(format='%(asctime)s - %(levelname)s - %(name)s -   %(message)s',
                     datefmt='%m/%d/%Y %H:%M:%S',
                     level=logging.INFO)
@@ -52,6 +57,13 @@ if __name__ == "__main__":
     parser.add_argument('--poolout-file', '-out', help="poolout file", required=True)
     parser.add_argument('--result', help="result file path", required=True)
     args = parser.parse_args()
+    
+    dataflow_tag = os.getenv('DATAFLOW_TAG', ProspectiveService.DEFAULT_DATAFLOW_TAG)
+    provenance = RetrospectiveService(dataflow_tag)
+    input_data = {}
+    with provenance.get_retrospective_data(ProspectiveService.TF_PARSE_POOLOUT, input_data) as result:
 
-    process_files(args.paras_file, args.poolout_file, args.result)
+        process_files(args.paras_file, args.poolout_file, args.result)
+        result[ProspectiveService.DT_PARSED_POOLOUT_DATA] = args.result
+
     logger.info("Processing completed")

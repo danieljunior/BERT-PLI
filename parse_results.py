@@ -1,5 +1,9 @@
 import json
 import os
+import sys
+
+from provenance.retrospective_service import RetrospectiveService
+from provenance.prospective_service import ProspectiveService
 
 def jsonl_to_collie_format(jsonl_data):
     result = {}
@@ -204,8 +208,9 @@ def evaluate_predictions(labels_file, predicted_file, output_file=None):
     return metrics
 
 if __name__ == "__main__":
-    import sys
-    
+    dataflow_tag = os.getenv('DATAFLOW_TAG', ProspectiveService.DEFAULT_DATAFLOW_TAG)
+    provenance = RetrospectiveService(dataflow_tag)
+
     if len(sys.argv) > 1 and sys.argv[1] == "evaluate":
         # Evaluation mode
         if len(sys.argv) < 4:
@@ -215,8 +220,13 @@ if __name__ == "__main__":
         labels_file = sys.argv[2]
         predicted_file = sys.argv[3]
         output_file = sys.argv[4] if len(sys.argv) > 4 else None
-        
-        evaluate_predictions(labels_file, predicted_file, output_file)
+
+        input_data = {ProspectiveService.DT_TRUE_LABELS: [[labels_file]]}
+        with provenance.get_retrospective_data(ProspectiveService.TF_CALCULATE_METRICS, 
+                                               input_data) as result:
+            evaluate_predictions(labels_file, predicted_file, output_file)
+            result[ProspectiveService.DT_METRICS] = output_file
+
     elif len(sys.argv) > 1 and sys.argv[1] == "parse":
         if len(sys.argv) < 3:
             print("Usage: python parse_results.py parse <input.json> <output.json>")
@@ -228,5 +238,8 @@ if __name__ == "__main__":
         
         # Create output directory if it doesn't exist
         os.makedirs(os.path.dirname(output_file), exist_ok=True)
-        
-        parse_gru_results(input_file, output_file)
+        input_data = {}
+        with provenance.get_retrospective_data(ProspectiveService.TF_PARSE_RESULTS, 
+                                               input_data) as result:
+            parse_gru_results(input_file, output_file)
+            result[ProspectiveService.DT_PARSED_TEST_RESULTS] = output_file
