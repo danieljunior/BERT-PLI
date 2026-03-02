@@ -224,7 +224,11 @@ if __name__ == "__main__":
         input_data = {ProspectiveService.DT_TRUE_LABELS: [[labels_file]]}
         with provenance.get_retrospective_data(ProspectiveService.TF_CALCULATE_METRICS, 
                                                input_data) as result:
-            evaluate_predictions(labels_file, predicted_file, output_file)
+            if not os.path.exists(output_file):
+                evaluate_predictions(labels_file, predicted_file, output_file)
+            else:
+                print(f"Output file already exists. Exiting.")
+
             result[ProspectiveService.DT_METRICS] = [[output_file]]
 
     elif len(sys.argv) > 1 and sys.argv[1] == "parse":
@@ -239,5 +243,9 @@ if __name__ == "__main__":
         input_data = {}
         with provenance.get_retrospective_data(ProspectiveService.TF_PARSE_RESULTS, 
                                                input_data) as result:
-            parse_gru_results(input_file, output_file)
+            if not os.path.exists(output_file):
+                parse_gru_results(input_file, output_file)
+            else:
+                print(f"Output file already exists. Exiting.")
+
             result[ProspectiveService.DT_PARSED_TEST_RESULTS] = [[output_file]]

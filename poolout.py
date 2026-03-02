@@ -73,20 +73,22 @@ if __name__ == "__main__":
     input_data = {dataset: [[poolout_config, args.checkpoint]],}
     with provenance.get_retrospective_data(task, input_data) as result:
 
-        parameters = init_all(config, gpu_list, args.checkpoint, "poolout")
+        if not os.path.exists(args.result):
+            out_file = open(args.result, 'w', encoding='utf-8')
+            parameters = init_all(config, gpu_list, args.checkpoint, "poolout")
+            outputs = pool_out(parameters, config, gpu_list, args.result)
+            logger.info(f"Total number of outputs: {outputs}")
+            for output in outputs:
+                tmp_dict = {
+                    'id_': output[0],
+                    'res': output[1]
+                }
+                out_line = json.dumps(tmp_dict, ensure_ascii=False) + '\n'
+                out_file.write(out_line)
+            out_file.close()
+        else:
+            logger.info(f"Result file already exists: {args.result}")
 
-        out_file = open(args.result, 'w', encoding='utf-8')
-        outputs = pool_out(parameters, config, gpu_list, args.result)
-        logger.info(f"Total number of outputs: {outputs}")
-        for output in outputs:
-            tmp_dict = {
-                'id_': output[0],
-                'res': output[1]
-            }
-            out_line = json.dumps(tmp_dict, ensure_ascii=False) + '\n'
-            out_file.write(out_line)
-        out_file.close()
-        
         sentences_file = config.get("data", "test_data_path") + "/" + config.get("data", "test_file_list")
         result[result_key] = [["1", args.result, sentences_file]]
     # train(parameters, config, gpu_list)

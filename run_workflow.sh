@@ -30,7 +30,7 @@ fi
 : "${BERT_CHECKPOINT:?Missing BERT_CHECKPOINT in .env}"
 : "${POOLOUT_RESULT:?Missing POOLOUT_RESULT in .env}"
 : "${POOLOUT_TEST_RESULT:?Missing POOLOUT_TEST_RESULT in .env}"
-: "${PAIRS_DATA:?Missing PAIRS_DATA in .env}"
+: "${TRAIN_LABELS:?Missing TRAIN_LABELS in .env}"
 : "${TRAIN_DATA:?Missing TRAIN_DATA in .env}"
 : "${TEST_DATA:?Missing TEST_DATA in .env}"
 : "${LSTM_CONFIG:?Missing LSTM_CONFIG in .env}"
@@ -42,7 +42,7 @@ fi
 : "${GRU_CHECKPOINT:?Missing GRU_CHECKPOINT in .env}"
 : "${GRU_RESULTS:?Missing GRU_RESULTS in .env}"
 : "${PARSED_GRU_RESULTS:?Missing PARSED_GRU_RESULTS in .env}"
-: "${TRUE_LABELS:?Missing TRUE_LABELS in .env}"
+: "${TEST_LABELS:?Missing TEST_LABELS in .env}"
 : "${GRU_METRICS:?Missing GRU_METRICS in .env}"
 : "${PARSED_LSTM_RESULTS:?Missing PARSED_LSTM_RESULTS in .env}"
 : "${LSTM_METRICS:?Missing LSTM_METRICS in .env}"
@@ -58,7 +58,7 @@ run_command() {
     fi
 }
 
-run_command "python3 coliee_to_sts_parser.py -p /app/data/COLIEE/task1_test_files_2024/ -l /app/data/COLIEE/task1_train_labels_2024.json -vo /app/data/COLIEE/train_vanilla_sentences.json -so /app/data/COLIEE/train_summarized_sentences.json" "coliee_to_sts_parser.py"
+run_command "python3 coliee_to_sts_parser.py -p /app/data/COLIEE/task1_train_files_2024/ -l /app/data/COLIEE/task1_train_labels_2024.json -vo /app/data/COLIEE/train_vanilla_sentences.json -so /app/data/COLIEE/train_summarized_sentences.json" "coliee_to_sts_parser.py"
 
 run_command "python3 coliee_to_sts_parser.py -p /app/data/COLIEE/task1_test_files_2024/ -l /app/data/COLIEE/task1_test_labels_2024.json -vo /app/data/COLIEE/test_vanilla_sentences.json -so /app/data/COLIEE/test_summarized_sentences.json --test" "coliee_to_sts_parser.py (test)"
 
@@ -66,11 +66,11 @@ run_command "python3 train.py -c $FINETUNE_CONFIG -g 0" "train.py (finetune)"
 
 run_command "python3 poolout.py -c $POOLOUT_CONFIG -g $POOLOUT_GPU --checkpoint $BERT_CHECKPOINT --result $POOLOUT_RESULT" "poolout.py"
 
-run_command "python3 poolout_to_train.py -in $PAIRS_DATA -out $POOLOUT_RESULT --result $TRAIN_DATA" "poolout_to_train.py"
+run_command "python3 poolout_to_train.py -in $TRAIN_LABELS -out $POOLOUT_RESULT --result $TRAIN_DATA" "poolout_to_train.py"
 
 run_command "python3 poolout.py -c $POOLOUT_TEST_CONFIG -g $POOLOUT_GPU --checkpoint $BERT_CHECKPOINT --result $POOLOUT_TEST_RESULT --test" "poolout.py"
 
-run_command "python3 poolout_to_train.py -in $PAIRS_DATA -out $POOLOUT_TEST_RESULT --result $TEST_DATA --test" "poolout_to_train.py"
+run_command "python3 poolout_to_train.py -in $TEST_LABELS -out $POOLOUT_TEST_RESULT --result $TEST_DATA --test" "poolout_to_train.py"
 
 run_command "python3 train.py -c $LSTM_CONFIG -g $LSTM_GPU" "train.py (lstm)"
 
@@ -78,7 +78,7 @@ run_command "python3 test.py -c $LSTM_CONFIG -g $LSTM_GPU --checkpoint $LSTM_CHE
 
 run_command "python parse_results.py parse $LSTM_RESULTS $PARSED_LSTM_RESULTS" "parse_results.py (lstm)"
 
-run_command "python parse_results.py evaluate $TRUE_LABELS $PARSED_LSTM_RESULTS $LSTM_METRICS" "parse_results.py (evaluate lstm)"
+run_command "python parse_results.py evaluate $TEST_LABELS $PARSED_LSTM_RESULTS $LSTM_METRICS" "parse_results.py (evaluate lstm)"
 
 run_command "python3 train.py -c $GRU_CONFIG -g $GRU_GPU" "train.py (gru)"
 
@@ -86,6 +86,6 @@ run_command "python3 test.py -c $GRU_CONFIG -g $GRU_GPU --checkpoint $GRU_CHECKP
 
 run_command "python parse_results.py parse $GRU_RESULTS $PARSED_GRU_RESULTS" "parse_results.py (gru)"
 
-run_command "python parse_results.py evaluate $TRUE_LABELS $PARSED_GRU_RESULTS $GRU_METRICS" "parse_results.py (evaluate gru)"
+run_command "python parse_results.py evaluate $TEST_LABELS $PARSED_GRU_RESULTS $GRU_METRICS" "parse_results.py (evaluate gru)"
 
 echo "All commands succeeded"

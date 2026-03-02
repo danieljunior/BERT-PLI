@@ -57,19 +57,23 @@ if __name__ == "__main__":
     input_data = {ProspectiveService.DT_TEST_CONFIG: [[config_file, args.checkpoint]],}
 
     with provenance.get_retrospective_data(ProspectiveService.TF_TEST_CLASSIFIER, input_data) as result:
-        parameters = init_all(config, gpu_list, args.checkpoint, "test")
+        if not os.path.exists(args.result):
+            parameters = init_all(config, gpu_list, args.checkpoint, "test")
 
-        if config.getboolean('output', 'save_as_dict'):
-            out_file = open(args.result, 'w', encoding='utf-8')
-            outputs = test(parameters, config, gpu_list)
-            for output in outputs:
-                tmp_dict = {
-                    'id_': output[0],
-                    'res': output[1]
-                }
-                out_line = json.dumps(tmp_dict, ensure_ascii=False) + '\n'
-                out_file.write(out_line)
+            if config.getboolean('output', 'save_as_dict'):
+                out_file = open(args.result, 'w', encoding='utf-8')
+                outputs = test(parameters, config, gpu_list)
+                for output in outputs:
+                    tmp_dict = {
+                        'id_': output[0],
+                        'res': output[1]
+                    }
+                    out_line = json.dumps(tmp_dict, ensure_ascii=False) + '\n'
+                    out_file.write(out_line)
+            else:
+                json.dump(test(parameters, config, gpu_list), open(args.result, "w", encoding="utf8"), ensure_ascii=False,
+                        sort_keys=True, indent=2)
         else:
-            json.dump(test(parameters, config, gpu_list), open(args.result, "w", encoding="utf8"), ensure_ascii=False,
-                    sort_keys=True, indent=2)
+            print(f"Output file already exists. Exiting.")
+
         result[ProspectiveService.DT_TEST_RESULTS] = [[args.result]]

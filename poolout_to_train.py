@@ -70,8 +70,11 @@ if __name__ == "__main__":
         task = ProspectiveService.TF_TRAIN_PARSE_POOLOUT
         result_key = ProspectiveService.DT_TRAIN_PARSED_POOLOUT_DATA
     with provenance.get_retrospective_data(task, input_data) as result:
+        if not os.path.exists(args.result):
+            process_files(args.paras_file, args.poolout_file, args.result)
+        else:
+            print(f"Output file already exists. Exiting.")
 
-        process_files(args.paras_file, args.poolout_file, args.result)
         result[result_key] = [[args.result]]
 
     logger.info("Processing completed")
