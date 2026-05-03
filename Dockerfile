@@ -1,34 +1,13 @@
 # FROM python:3.6-slim
-ARG CUDA_IMAGE=nvidia/cuda:13.0.3-cudnn-devel-ubuntu22.04
-ARG PYTORCH_GIT_REF=main
-ARG TORCH_CUDA_ARCH_LIST=12.0
-ARG MAX_JOBS=4
+ARG CUDA_IMAGE=nvidia/cuda:13.0.3-cudnn-runtime-ubuntu22.04
 FROM ${CUDA_IMAGE}
-ARG PYTORCH_GIT_REF=main
-ARG TORCH_CUDA_ARCH_LIST=12.0
-ARG MAX_JOBS=4
 
 ENV DFA_URL="http://dfanalyzer:22000/"
 # Set working directory
 WORKDIR /app
-ENV TORCH_CUDA_ARCH_LIST=${TORCH_CUDA_ARCH_LIST}
-ENV USE_CUDA=1
-ENV USE_CUDNN=1
-ENV USE_NCCL=1
-ENV BUILD_TEST=0
-ENV MAX_JOBS=${MAX_JOBS}
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
-    ca-certificates \
-    cmake \
     curl \
-    git \
     libgomp1 \
-    libomp-dev \
-    libopenblas-dev \
-    libssl-dev \
-    libffi-dev \
-    ninja-build \
     python3 \
     python3-pip \
     python3-venv \
@@ -38,15 +17,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Copy requirements if you have them
 COPY requirements.txt .
 RUN python3 -m pip install --no-cache-dir --upgrade pip setuptools wheel && \
-    python3 -m pip install --no-cache-dir numpy==1.26.4
-RUN git clone --depth 1 --branch ${PYTORCH_GIT_REF} --recursive --shallow-submodules \
-    https://github.com/pytorch/pytorch.git /opt/pytorch && \
-    cd /opt/pytorch && \
-    python3 -m pip install --no-cache-dir -r /opt/pytorch/requirements.txt && \
-    python3 setup.py install && \
-    cd /app && \
-    rm -rf /opt/pytorch
-RUN python3 -m pip install --no-cache-dir -r /app/requirements.txt
+    python3 -m pip install --no-cache-dir --pre torch --index-url https://download.pytorch.org/whl/nightly/cu130 && \
+    python3 -m pip install --no-cache-dir -r /app/requirements.txt
 
 # Copy application code
 # COPY . .
