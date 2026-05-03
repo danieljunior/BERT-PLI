@@ -1,22 +1,15 @@
 # FROM python:3.6-slim
-FROM pure/python:3.6-cuda10.0-cudnn7-runtime
+ARG PYTORCH_IMAGE=pytorch/pytorch:nightly-cuda13.0-cudnn9-runtime
+FROM ${PYTORCH_IMAGE}
 
 ENV DFA_URL="http://dfanalyzer:22000/"
 # Set working directory
 WORKDIR /app
-RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/3bf863cc.pub && \ 
-    apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1804/x86_64/7fa2af80.pub
-
-RUN echo "deb http://archive.debian.org/debian stretch main contrib non-free" > /etc/apt/sources.list && \
-    apt-get update && apt-get install -y curl libgomp1
+RUN apt-get update && apt-get install -y curl libgomp1 && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements if you have them
 COPY requirements.txt .
-# RUN curl -O https://download.pytorch.org/whl/torchvision-0.2.0-py2.py3-none-any.whl && \
-RUN curl -O https://download.pytorch.org/whl/cu100/torchvision-0.3.0-cp36-cp36m-linux_x86_64.whl && \
-    curl -O https://download.pytorch.org/whl/cu100/torch-1.0.0-cp36-cp36m-linux_x86_64.whl && \
-    pip install torchvision-0.3.0-cp36-cp36m-linux_x86_64.whl torch-1.0.0-cp36-cp36m-linux_x86_64.whl && \
-    rm torchvision-0.3.0-cp36-cp36m-linux_x86_64.whl torch-1.0.0-cp36-cp36m-linux_x86_64.whl && \
+RUN pip install --no-cache-dir --pre torch torchvision --index-url https://download.pytorch.org/whl/nightly/cu130 && \
     pip install --no-cache-dir -r requirements.txt
 
 # Copy application code

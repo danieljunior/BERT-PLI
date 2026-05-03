@@ -5,7 +5,9 @@ services:
     build:
       context: ./
       dockerfile: Dockerfile
-    image: bert-pli:latest
+      args:
+        PYTORCH_IMAGE: pytorch/pytorch:nightly-cuda13.0-cudnn9-runtime
+    image: bert-pli:cuda13-nightly
     container_name: bert-pli
     volumes:
       - ./:/app

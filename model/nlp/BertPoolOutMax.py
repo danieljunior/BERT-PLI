@@ -5,7 +5,7 @@ __author__ = 'yshao'
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from pytorch_pretrained_bert import BertModel
+from transformers import BertModel
 
 from tqdm import tqdm
 
@@ -43,7 +43,8 @@ class BertPoolOutMax(nn.Module):
                     # print(input_ids[k, i:i+self.step].view(-1, self.max_len).size())
                     _, lst = self.bert(input_ids[k, i:i+self.step].view(-1, self.max_len),
                                        token_type_ids=token_type_ids[k, i:i+self.step].view(-1, self.max_len),
-                                       attention_mask=attention_mask[k, i:i+self.step].view(-1, self.max_len))
+                                       attention_mask=attention_mask[k, i:i+self.step].view(-1, self.max_len),
+                                       return_dict=False)
                     # print('before view', lst.size())
                     lst = lst.view(self.step, self.max_para_c, -1)
                     # print('after view', lst.size())

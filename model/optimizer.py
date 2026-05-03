@@ -1,5 +1,4 @@
 import torch.optim as optim
-from pytorch_pretrained_bert import BertAdam
 
 
 def init_optimizer(model, config, *args, **params):
@@ -12,8 +11,8 @@ def init_optimizer(model, config, *args, **params):
         optimizer = optim.SGD(model.parameters(), lr=learning_rate,
                               weight_decay=config.getfloat("train", "weight_decay"))
     elif optimizer_type == "bert_adam":
-        optimizer = BertAdam(model.parameters(), lr=learning_rate,
-                             weight_decay=config.getfloat("train", "weight_decay"))
+        optimizer = optim.AdamW(model.parameters(), lr=learning_rate,
+                                weight_decay=config.getfloat("train", "weight_decay"))
     else:
         raise NotImplementedError
 

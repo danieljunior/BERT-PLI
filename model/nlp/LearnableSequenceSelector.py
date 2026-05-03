@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 from model.nlp.MultiHeadAttention import MultiHeadAttention
-from pytorch_pretrained_bert import BertTokenizer, BertModel, BertForMaskedLM
+from transformers import BertTokenizer, BertModel
 
 class LearnableSequenceSelector(nn.Module):
     """
@@ -110,9 +110,14 @@ class LearnableSequenceSelector(nn.Module):
         res = []
         for tokens_tensor, segments_tensors in zip(tokens, segments):
             with torch.no_grad():
-                encoded_layers, _ = self.bert_model(tokens_tensor.unsqueeze(0).long().to('cuda'), segments_tensors.unsqueeze(0).long().to('cuda'))
+                _, _, hidden_states = self.bert_model(
+                    tokens_tensor.unsqueeze(0).long().to('cuda'),
+                    token_type_ids=segments_tensors.unsqueeze(0).long().to('cuda'),
+                    output_hidden_states=True,
+                    return_dict=False,
+                )
             # Sum the CLS token (first token) from the last 4 layers into a single vector.
-            last_four = encoded_layers[-4:]
+            last_four = hidden_states[-4:]
             if last_four[0].dim() == 3:
                 # shape (batch, seq_len, hidden) -> take batch 0, token 0
                 cls_vectors = [layer[0, 0, :] for layer in last_four]
