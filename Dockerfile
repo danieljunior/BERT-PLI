@@ -16,7 +16,7 @@ RUN apt-get update && apt-get install -y \
 # Copy requirements if you have them
 COPY requirements.txt .
 RUN python3 -m pip install --no-cache-dir --upgrade pip && \
-    python3 -m pip install --no-cache-dir --pre torch torchvision --index-url https://download.pytorch.org/whl/nightly/cu124 && \
+    python3 -m pip install --no-cache-dir --pre torch --index-url https://download.pytorch.org/whl/nightly/cu124 && \
     python3 -m pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
