@@ -6,8 +6,11 @@ services:
       context: ./
       dockerfile: Dockerfile
       args:
-        CUDA_IMAGE: nvidia/cuda:12.4.1-cudnn-runtime-ubuntu22.04
-    image: bert-pli:cuda124-nightly
+        CUDA_IMAGE: nvidia/cuda:12.4.1-cudnn-devel-ubuntu22.04
+        PYTORCH_GIT_REF: main
+        TORCH_CUDA_ARCH_LIST: "12.0"
+        MAX_JOBS: "4"
+    image: bert-pli:cuda124-src
     container_name: bert-pli
     volumes:
       - ./:/app
