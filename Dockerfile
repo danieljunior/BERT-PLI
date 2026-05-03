@@ -4,6 +4,9 @@ ARG PYTORCH_GIT_REF=main
 ARG TORCH_CUDA_ARCH_LIST=12.0
 ARG MAX_JOBS=4
 FROM ${CUDA_IMAGE}
+ARG PYTORCH_GIT_REF=main
+ARG TORCH_CUDA_ARCH_LIST=12.0
+ARG MAX_JOBS=4
 
 ENV DFA_URL="http://dfanalyzer:22000/"
 # Set working directory
@@ -14,7 +17,7 @@ ENV USE_CUDNN=1
 ENV USE_NCCL=1
 ENV BUILD_TEST=0
 ENV MAX_JOBS=${MAX_JOBS}
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     ca-certificates \
     cmake \
@@ -29,6 +32,7 @@ RUN apt-get update && apt-get install -y \
     python3 \
     python3-pip \
     python3-venv \
+    && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements if you have them
