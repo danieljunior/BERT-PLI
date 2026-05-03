@@ -1,5 +1,5 @@
 # FROM python:3.6-slim
-ARG CUDA_IMAGE=nvidia/cuda:12.4.1-cudnn-devel-ubuntu22.04
+ARG CUDA_IMAGE=nvidia/cuda:13.0.3-cudnn-devel-ubuntu22.04
 ARG PYTORCH_GIT_REF=main
 ARG TORCH_CUDA_ARCH_LIST=12.0
 ARG MAX_JOBS=4
