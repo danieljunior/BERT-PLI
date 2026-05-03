@@ -39,9 +39,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY requirements.txt .
 RUN python3 -m pip install --no-cache-dir --upgrade pip setuptools wheel && \
     python3 -m pip install --no-cache-dir numpy==1.26.4
-RUN git clone --depth 1 --branch ${PYTORCH_GIT_REF} https://github.com/pytorch/pytorch.git /opt/pytorch && \
+RUN git clone --depth 1 --branch ${PYTORCH_GIT_REF} --recursive --shallow-submodules \
+    https://github.com/pytorch/pytorch.git /opt/pytorch && \
     cd /opt/pytorch && \
-    git submodule sync && git submodule update --init --recursive && \
     python3 -m pip install --no-cache-dir -r /opt/pytorch/requirements.txt && \
     python3 setup.py install && \
     cd /app && \
