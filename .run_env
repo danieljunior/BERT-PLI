@@ -3,41 +3,48 @@
 # -----------------------------
 FINETUNE_CONFIG=/app/config/nlp/BertPoint.config
 
+##Parse data
+VANILLA_TRAIN_OUTPUT=/app/data/COLIEE/train_vanilla_sentences.json
+VANILLA_TEST_OUTPUT=/app/data/COLIEE/test_vanilla_sentences.json
+SUMMARIZED_TRAIN_OUTPUT=/app/data/COLIEE/train_summarized_sentences.json
+SUMMARIZED_TEST_OUTPUT=/app/data/COLIEE/test_summarized_sentences.json
+PARAGRAPH_TRAIN_OUTPUT=/app/data/COLIEE/train_vanilla_paragraphs.json
+PARAGRAPH_TEST_OUTPUT=/app/data/COLIEE/test_vanilla_paragraphs.json
 # -----------------------------
 # Poolout stage
 # -----------------------------
-POOLOUT_GPU=0,1,2,3,4,5,6,7
+POOLOUT_GPU=4,5,6,7
 BERT_CHECKPOINT=/app/output/checkpoints/bert_finetuned/2.pkl
 POOLOUT_CONFIG=/app/config/nlp/BertPoolOutMax.config
-POOLOUT_RESULT=/app/output/results/vanilla/train_poolout_max.json
+POOLOUT_RESULT=/app/output/results/paragraph/train_poolout_max.json
 POOLOUT_TEST_CONFIG=/app/config/nlp/BertPoolOutMaxTest.config
-POOLOUT_TEST_RESULT=/app/output/results/vanilla/test_poolout_max.json
+POOLOUT_TEST_RESULT=/app/output/results/paragraph/test_poolout_max.json
 # -----------------------------
 # Data conversion
 # -----------------------------
 TRAIN_LABELS=/app/data/COLIEE/task1_train_labels_2024.json
-TRAIN_DATA=/app/output/results/vanilla/train_poolout.json
-TEST_DATA=/app/output/results/vanilla/test_poolout.json
+TRAIN_DATA=/app/output/results/paragraph/train_poolout.json
+TEST_DATA=/app/output/results/paragraph/test_poolout.json
 
 # -----------------------------
 # LSTM stage
 # -----------------------------
 LSTM_CONFIG=/app/config/nlp/AttenLSTM.config
 LSTM_GPU=4
-LSTM_CHECKPOINT=/app/output/checkpoints/vanilla/attenlstm/59.pkl
-LSTM_RESULTS=/app/output/results/vanilla/lstm_results.json   
-PARSED_LSTM_RESULTS=/app/output/results/vanilla/lstm_parsed_results.json
-LSTM_METRICS=/app/output/results/vanilla/lstm_metrics.json
+LSTM_CHECKPOINT=/app/output/checkpoints/paragraph/attenlstm/59.pkl
+LSTM_RESULTS=/app/output/results/paragraph/lstm_results.json   
+PARSED_LSTM_RESULTS=/app/output/results/paragraph/lstm_parsed_results.json
+LSTM_METRICS=/app/output/results/paragraph/lstm_metrics.json
 
 # -----------------------------
 # GRU stage
 # -----------------------------
 GRU_CONFIG=/app/config/nlp/AttenGRU.config
 GRU_GPU=4
-GRU_CHECKPOINT=/app/output/checkpoints/vanilla/attengru/59.pkl
-GRU_RESULTS=/app/output/results/vanilla/gru_results.json
-PARSED_GRU_RESULTS=/app/output/results/vanilla/gru_parsed_results.json
-GRU_METRICS=/app/output/results/vanilla/gru_metrics.json
+GRU_CHECKPOINT=/app/output/checkpoints/paragraph/attengru/59.pkl
+GRU_RESULTS=/app/output/results/paragraph/gru_results.json
+PARSED_GRU_RESULTS=/app/output/results/paragraph/gru_parsed_results.json
+GRU_METRICS=/app/output/results/paragraph/gru_metrics.json
 
 # -----------------------------
 # Evaluation

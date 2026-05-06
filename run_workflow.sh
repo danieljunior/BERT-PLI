@@ -46,6 +46,12 @@ fi
 : "${GRU_METRICS:?Missing GRU_METRICS in .env}"
 : "${PARSED_LSTM_RESULTS:?Missing PARSED_LSTM_RESULTS in .env}"
 : "${LSTM_METRICS:?Missing LSTM_METRICS in .env}"
+: "${VANILLA_TRAIN_OUTPUT:?Missing VANILLA_TRAIN_OUTPUT in .env}"
+: "${VANILLA_TEST_OUTPUT:?Missing VANILLA_TEST_OUTPUT in .env}"
+: "${SUMMARIZED_TRAIN_OUTPUT:?Missing SUMMARIZED_TRAIN_OUTPUT in .env}"
+: "${SUMMARIZED_TEST_OUTPUT:?Missing SUMMARIZED_TEST_OUTPUT in .env}"
+: "${PARAGRAPH_TRAIN_OUTPUT:?Missing PARAGRAPH_TRAIN_OUTPUT in .env}"
+: "${PARAGRAPH_TEST_OUTPUT:?Missing PARAGRAPH_TEST_OUTPUT in .env}"
 
 # Function to run a command and check for failure
 run_command() {
@@ -58,19 +64,23 @@ run_command() {
     fi
 }
 
-run_command "python3 coliee_to_sts_parser.py -p /app/data/COLIEE/task1_train_files_2024/ -l /app/data/COLIEE/task1_train_labels_2024.json -vo /app/data/COLIEE/train_vanilla_sentences.json -so /app/data/COLIEE/train_summarized_sentences.json" "coliee_to_sts_parser.py"
+run_command "python3 coliee_to_sts_parser.py -p /app/data/COLIEE/task1_train_files_2024/ -l $TRAIN_LABELS -vo $VANILLA_TRAIN_OUTPUT -so $SUMMARIZED_TRAIN_OUTPUT -po $PARAGRAPH_TRAIN_OUTPUT" "coliee_to_sts_parser.py"
 
-run_command "python3 coliee_to_sts_parser.py -p /app/data/COLIEE/task1_test_files_2024/ -l /app/data/COLIEE/task1_test_labels_2024.json -vo /app/data/COLIEE/test_vanilla_sentences.json -so /app/data/COLIEE/test_summarized_sentences.json --test" "coliee_to_sts_parser.py (test)"
+run_command "python3 coliee_to_sts_parser.py -p /app/data/COLIEE/task1_test_files_2024/ -l $TEST_LABELS -vo $VANILLA_TEST_OUTPUT -so $SUMMARIZED_TEST_OUTPUT -po $PARAGRAPH_TEST_OUTPUT --test" "coliee_to_sts_parser.py (test)"
 
 run_command "python3 train.py -c $FINETUNE_CONFIG -g 0" "train.py (finetune)"
 
 run_command "python3 poolout.py -c $POOLOUT_CONFIG -g $POOLOUT_GPU --checkpoint $BERT_CHECKPOINT --result $POOLOUT_RESULT" "poolout.py"
 
-run_command "python3 poolout_to_train.py -in $TRAIN_LABELS -out $POOLOUT_RESULT --result $TRAIN_DATA" "poolout_to_train.py"
+# run_command "python3 poolout_to_train.py -in $VANILLA_TRAIN_OUTPUT -out $POOLOUT_RESULT --result $TRAIN_DATA" "poolout_to_train.py"
+# run_command "python3 poolout_to_train.py -in $SUMMARIZED_TRAIN_OUTPUT -out $POOLOUT_RESULT --result $TRAIN_DATA" "poolout_to_train.py"
+run_command "python3 poolout_to_train.py -in $PARAGRAPH_TRAIN_OUTPUT -out $POOLOUT_RESULT --result $TRAIN_DATA" "poolout_to_train.py"
 
 run_command "python3 poolout.py -c $POOLOUT_TEST_CONFIG -g $POOLOUT_GPU --checkpoint $BERT_CHECKPOINT --result $POOLOUT_TEST_RESULT --test" "poolout.py"
 
-run_command "python3 poolout_to_train.py -in $TEST_LABELS -out $POOLOUT_TEST_RESULT --result $TEST_DATA --test" "poolout_to_train.py"
+# run_command "python3 poolout_to_train.py -in $VANILLA_TEST_OUTPUT -out $POOLOUT_TEST_RESULT --result $TEST_DATA --test" "poolout_to_train.py"
+# run_command "python3 poolout_to_train.py -in $SUMMARIZED_TEST_OUTPUT -out $POOLOUT_TEST_RESULT --result $TEST_DATA --test" "poolout_to_train.py"
+run_command "python3 poolout_to_train.py -in $PARAGRAPH_TEST_OUTPUT -out $POOLOUT_TEST_RESULT --result $TEST_DATA --test" "poolout_to_train.py"
 
 run_command "python3 train.py -c $LSTM_CONFIG -g $LSTM_GPU" "train.py (lstm)"
 

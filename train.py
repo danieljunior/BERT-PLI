@@ -68,7 +68,7 @@ if __name__ == "__main__":
         input_data = {ProspectiveService.DT_CLASSIFIER_CONFIG: [[config_file]]}
         output_data = ProspectiveService.DT_CLASSIFIER_MODEL
     with provenance.get_retrospective_data(task, input_data) as result:
-        #####MOCK FINETUBE already runs#####
+        #####MOCK FINETUNE already runs#####
         if config.get("model", "model_name") == "BertPoint":
             results = [
                 ["1", "/app/output/checkpoints/bert_finetuned/1.pkl"],

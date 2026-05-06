@@ -46,8 +46,89 @@ def generate_negative_pairs(labels, files):
 
     return negative_pairs
 
+def paragraphs_processor(files_path, output_file_vanilla, output_file_paragraph):
+    positive_pairs = []
+    negative_pairs = []
+    with open(output_file_vanilla, "r", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            row = json.loads(line)
+            q_file = row["guid"].split("_")[0] + ".txt"
+            p_file = row["guid"].split("_")[1] + ".txt"
+            label = row["label"]
+            if label == 1:
+                positive_pairs.append((q_file, p_file))
+            else:
+                negative_pairs.append((q_file, p_file))
 
-def process_files(files_path, labels_file, output_file_vanilla, output_file_sumy):
+    positive_pairs_set = set(positive_pairs)
+    all_pairs = positive_pairs + negative_pairs
+    
+    ray.init(num_cpus=6, ignore_reinit_error=True)
+    @ray.remote
+
+    def paragraph_process_pair(q_file, p_file, files_path, positive_pairs_set ):
+        stemmer = Stemmer(LANGUAGE)
+        summarizer = Summarizer(stemmer)
+        summarizer.stop_words = get_stop_words(LANGUAGE)
+
+        q_parser = PlaintextParser.from_file(
+            f"{files_path}/{q_file}", Tokenizer(LANGUAGE)
+        )
+        q_paragraphs = []
+        for paragraph in q_parser.document.paragraphs:
+            headings = "\n".join([str(head) for head in paragraph.headings])
+            sentences = "".join([str(sent) for sent in paragraph.sentences])
+            q_paragraphs.append(headings + "\n" + sentences)
+
+        p_parser = PlaintextParser.from_file(
+            f"{files_path}/{p_file}", Tokenizer(LANGUAGE)
+        )
+        p_paragraphs = []
+        for paragraph in p_parser.document.paragraphs:
+            headings = "\n".join([str(head) for head in paragraph.headings])
+            sentences = "".join([str(sent) for sent in paragraph.sentences])
+            p_paragraphs.append(headings + "\n" + sentences)
+
+        entry = {
+            "guid": f"{q_file.split('.')[0]}_{p_file.split('.')[0]}",
+            "q_paras": q_paragraphs,
+            "c_paras": p_paragraphs,
+            "label": 1 if (q_file, p_file) in positive_pairs_set else 0,
+        }
+        return entry
+
+    batch_size = 10
+    paragraph_data = []
+
+    for i in tqdm(range(0, len(all_pairs), batch_size), desc="Batching Ray tasks"):
+        batch = all_pairs[i : i + batch_size]
+
+        # Dispatch both vanilla and sumy tasks for each pair
+        paragraph_futures = []
+        
+        for q_file, p_file in tqdm(batch, desc="Dispatching Ray tasks", leave=False):
+            paragraph_futures.append(
+                paragraph_process_pair.remote(q_file, p_file, files_path, positive_pairs_set)
+            )
+
+        # Collect results in order
+        paragraph_data.extend(ray.get(paragraph_futures))
+
+    # Write vanilla output
+    with open(output_file_paragraph, "w", encoding="utf-8") as f:
+        for entry in paragraph_data:
+            f.write(json.dumps(entry, ensure_ascii=False) + "\n")
+    return
+
+def process_files(files_path, labels_file, output_file_vanilla, output_file_sumy, output_file_paragraph):
+
+    # If vanilla output already exists, process it to generate paragraphs output and return
+    if os.path.exists(output_file_vanilla):
+        return paragraphs_processor(files_path, output_file_vanilla, output_file_paragraph)
+
     # Read labels file
     with open(labels_file, "r") as f:
         labels = json.load(f)
@@ -185,6 +266,14 @@ def main():
         default="/app/data/COLIEE/train_summarized_sentences.json",
         required=True,
     )
+    
+    parser.add_argument(
+        "--paragraph-output",
+        "-po",
+        help="output file path for sumy paragraphs",
+        default="/app/data/COLIEE/train_vanilla_paragraphs.json",
+        required=True,
+    )
     parser.add_argument("--test", help="test mode", action="store_true")
     args = parser.parse_args()
 
@@ -205,12 +294,13 @@ def main():
 
     input_data = {dataset: [[args.path, args.labels, mode]]}
     with provenance.get_retrospective_data(task, input_data) as result:
-        if not os.path.exists(args.vanilla_output) and not os.path.exists(args.sumy_output):
-            process_files(args.path, args.labels, args.vanilla_output, args.sumy_output)
+        if (not os.path.exists(args.vanilla_output) and not os.path.exists(args.sumy_output)) or not os.path.exists(args.paragraph_output):
+            process_files(args.path, args.labels, args.vanilla_output, args.sumy_output, args.paragraph_output)
         else:
             print(f"Output files already exist. Exiting.")
 
-        result[result_key] = [[args.vanilla_output, args.sumy_output, mode]]
+        result[result_key] = [[args.vanilla_output, args.paragraph_output, mode]]
+        # result[result_key] = [[args.vanilla_output, args.sumy_output, mode]]
 
 
 if __name__ == "__main__":
