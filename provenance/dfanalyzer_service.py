@@ -1,5 +1,11 @@
 import time
-import pymonetdb
+import json
+import os
+from typing import Any, Dict, List, Sequence, Tuple
+try:
+    import pymonetdb  # type: ignore
+except ModuleNotFoundError:  # pragma: no cover
+    pymonetdb = None
 
 
 class DfanalyzerService:
@@ -13,6 +19,11 @@ class DfanalyzerService:
         self.bypass = bypass
     
     def get_monet_connection(self):
+        if pymonetdb is None:
+            raise ModuleNotFoundError(
+                "pymonetdb is required to connect to MonetDB. "
+                "Install it (e.g., `pip install pymonetdb`) or run with bypass=True."
+            )
         conn = pymonetdb.connect(
             hostname=self.URL,
             port=self.PORT,
@@ -156,3 +167,213 @@ class DfanalyzerService:
             conn.commit()
         cursor.close()
         conn.close()
+
+    def export_classifier_metrics(self, term: str, output_path: str = None) -> Dict[str, Any]:
+        """Export classifier validation metrics stored in MonetDB.
+
+        Filters `ds_classifier_model` rows where `checkpoint` contains `term`, loads
+        per-epoch metrics from `validation_metrics_filepath` (file path or JSON), and
+        returns a structure compatible with `output/results/summarized/valid_metrics.json`.
+        If `output_path` is provided, dumps the JSON result to that file.
+
+        Example:
+            service.export_classifier_metrics(term="attengru", output_path="metrics.json")
+        """
+
+        self._validate_export_term(term)
+        if self.bypass:
+            return {"checkpoint_dir": "", "results": []}
+
+        rows = self._fetch_classifier_model_rows(term=term)
+        if not rows:
+            raise ValueError(
+                "No ds_classifier_model rows found for term="
+                f"{term!r} (expected checkpoint LIKE %term%)"
+            )
+
+        result = self._export_classifier_metrics_from_rows(rows)
+        if output_path:
+            os.makedirs(os.path.dirname(os.path.abspath(output_path)), exist_ok=True)
+            with open(output_path, "w", encoding="utf-8") as f:
+                json.dump(result, f, indent=2)
+
+        return result
+
+    def _validate_export_term(self, term: str) -> None:
+        if not isinstance(term, str) or not term.strip():
+            raise ValueError(f"term must be a non-empty str, got: {term!r}")
+
+    def _export_classifier_metrics_from_rows(
+        self, rows: Sequence[Tuple[str, int, Any]]
+    ) -> Dict[str, Any]:
+        chosen_by_checkpoint = self._dedupe_by_checkpoint(rows)
+        results = self._build_classifier_metrics_results(chosen_by_checkpoint)
+        checkpoint_dir = self._infer_checkpoint_dir([r["checkpoint"] for r in results])
+        return {"checkpoint_dir": checkpoint_dir, "results": results}
+
+    def _fetch_classifier_model_rows(self, term: str) -> List[Tuple[str, int, Any]]:
+        pattern = f"%{term}%"
+        conn = self.get_monet_connection()
+        cursor = conn.cursor()
+        try:
+            conn.commit()
+            query = (
+                "SELECT checkpoint, epoch, validation_metrics_filepath "
+                "FROM ds_classifier_model "
+                "WHERE checkpoint LIKE %s "
+                "ORDER BY epoch ASC;"
+            )
+            cursor.execute(query, (pattern,))
+            rows = cursor.fetchall() or []
+            return [(r[0], int(r[1]), r[2]) for r in rows]
+        finally:
+            cursor.close()
+            conn.close()
+
+    def _dedupe_by_checkpoint(
+        self, rows: Sequence[Tuple[str, int, Any]]
+    ) -> Dict[str, Tuple[int, Any]]:
+        """Pick one row per checkpoint (prefer higher epoch, non-empty metrics)."""
+
+        chosen: Dict[str, Tuple[int, Any]] = {}
+        for checkpoint, epoch, metrics_ref in rows:
+            if checkpoint is None:
+                continue
+            key = str(checkpoint)
+            prev = chosen.get(key)
+            if prev is None:
+                chosen[key] = (epoch, metrics_ref)
+                continue
+
+            prev_epoch, prev_ref = prev
+            if epoch > prev_epoch:
+                chosen[key] = (epoch, metrics_ref)
+                continue
+
+            if epoch == prev_epoch and (not prev_ref) and metrics_ref:
+                chosen[key] = (epoch, metrics_ref)
+
+        return chosen
+
+    def _build_classifier_metrics_results(
+        self, chosen_by_checkpoint: Dict[str, Tuple[int, Any]]
+    ) -> List[Dict[str, Any]]:
+        items = sorted(chosen_by_checkpoint.items(), key=lambda kv: kv[1][0])
+        results: List[Dict[str, Any]] = []
+        for checkpoint, (epoch, metrics_ref) in items:
+            metrics = self._load_validation_metrics(
+                metrics_ref=metrics_ref, checkpoint=checkpoint, epoch=epoch
+            )
+            results.append(
+                {
+                    "checkpoint": checkpoint,
+                    "epoch": epoch,
+                    "metrics": metrics,
+                }
+            )
+        return results
+
+    def _load_validation_metrics(
+        self, metrics_ref: Any, checkpoint: str, epoch: int
+    ) -> Dict[str, Any]:
+        text = self._normalize_metrics_ref(metrics_ref)
+        data = self._read_metrics_json(text=text, source=metrics_ref)
+        metrics = self._extract_metrics_dict(
+            data=data, source=metrics_ref, checkpoint=checkpoint, epoch=epoch
+        )
+        return metrics
+
+    def _normalize_metrics_ref(self, metrics_ref: Any) -> str:
+        if metrics_ref is None:
+            raise ValueError(
+                "validation_metrics_filepath is None (expected a JSON string or file path)"
+            )
+        if isinstance(metrics_ref, bytes):
+            metrics_ref = metrics_ref.decode("utf-8")
+        if not isinstance(metrics_ref, str):
+            raise ValueError(
+                "validation_metrics_filepath must be a str/bytes (JSON or file path), "
+                f"got: {type(metrics_ref).__name__}={metrics_ref!r}"
+            )
+
+        text = metrics_ref.strip()
+        if not text:
+            raise ValueError(
+                f"validation_metrics_filepath is empty (got: {metrics_ref!r}; expected JSON or a file path)"
+            )
+        return text
+
+    def _read_metrics_json(self, text: str, source: Any) -> Any:
+        if text.startswith("{") or text.startswith("["):
+            return json.loads(text)
+
+        path = self._resolve_metrics_path(text=text, source=source)
+        with open(path, "r", encoding="utf-8") as f:
+            return json.load(f)
+
+    def _resolve_metrics_path(self, text: str, source: Any) -> str:
+        path = text
+        if not os.path.isabs(path):
+            path = os.path.join(os.getcwd(), path)
+        if not os.path.exists(path):
+            raise FileNotFoundError(
+                f"Metrics file not found: {path!r} (from validation_metrics_filepath={source!r})"
+            )
+        return path
+
+    def _extract_metrics_dict(
+        self, data: Any, source: str, checkpoint: str, epoch: int
+    ) -> Dict[str, Any]:
+        if isinstance(data, dict) and isinstance(data.get("metrics"), dict):
+            return data["metrics"]
+
+        if isinstance(data, dict) and isinstance(data.get("results"), list):
+            metrics = self._extract_metrics_from_results_list(
+                results=data["results"], source=source, checkpoint=checkpoint, epoch=epoch
+            )
+            if metrics is not None:
+                return metrics
+
+        if isinstance(data, dict):
+            return data
+
+        raise ValueError(
+            "Validation metrics JSON must be a dict (or a dict with a 'metrics' dict); "
+            f"got: {type(data).__name__} from {source!r}"
+        )
+
+    def _extract_metrics_from_results_list(
+        self,
+        results: Any,
+        source: str,
+        checkpoint: str,
+        epoch: int,
+    ) -> Any:
+        if not isinstance(results, list):
+            return None
+
+        by_checkpoint = [r for r in results if isinstance(r, dict) and r.get("checkpoint") == checkpoint]
+        for candidate in by_checkpoint:
+            metrics = candidate.get("metrics")
+            if isinstance(metrics, dict):
+                return metrics
+
+        by_epoch = [r for r in results if isinstance(r, dict) and r.get("epoch") == epoch]
+        for candidate in by_epoch:
+            metrics = candidate.get("metrics")
+            if isinstance(metrics, dict):
+                return metrics
+
+        return None
+
+    def _infer_checkpoint_dir(self, checkpoints: Sequence[str]) -> str:
+        if not checkpoints:
+            return ""
+        if len(checkpoints) == 1:
+            return os.path.dirname(checkpoints[0])
+
+        common = os.path.commonpath(list(checkpoints))
+        _, ext = os.path.splitext(common)
+        if ext:
+            return os.path.dirname(common)
+        return common
