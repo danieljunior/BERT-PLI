@@ -1,21 +1,49 @@
-# AGENTS
+# PROJECT KNOWLEDGE BASE
 
-## Repo layout
-- Root contains the BERT-PLI training code (Python) plus Docker setup; DfAnalyzer is a separate Java/MonetDB service under `DfAnalyzer-Docker/`.
-- `support/` is a separate toolchain (Qdrant + embeddings) with its own Python >=3.9 deps; do not mix with the main Py3.6 environment.
+**Generated:** 2026-05-08
 
-## Primary workflows
-- `run_workflow.sh` is the end-to-end pipeline; it requires a `DATAFLOW_TAG` argument and loads `.run_env` from the repo root. It expects `/app/...` paths and exits early if any env var is missing.
-- `run_test.sh` and `run_test_poolout.sh` chain test -> parse -> evaluate as used in README examples.
+## OVERVIEW
+BERT-PLI training pipeline for Legal Case Retrieval and DfAnalyzer Java/MonetDB service for provenance tracking.
 
-## Data and mounts
-- Training scripts assume COLIEE data under `/app/data/COLIEE/` and outputs under `/app/output/`; `compose.yaml` mounts the dataset into `/app/data/COLIEE` inside the container.
-- The dataset path in Docker commands includes spaces and non-ASCII characters; always quote/escape or adjust it when editing `compose.yaml` or `docker_up.sh`.
+## STRUCTURE
+```text
+.
+├── config/          # Model and parser configurations
+├── data/            # COLIEE dataset and intermediate files
+├── dataset/         # PyTorch dataset definitions
+├── DfAnalyzer-Docker/ # External MonetDB/Java service
+├── formatter/       # Data formatters
+├── model/           # PyTorch models (BERT, RNNs, Attention)
+├── output/          # Training checkpoints and metrics
+├── provenance/      # DfAnalyzer python integration and storage
+├── support/         # Qdrant + embeddings toolchain (Python >=3.9)
+└── train.py         # Main training entry point
+```
 
-## Docker and services
-- The root `Dockerfile` targets Python 3.6 + CUDA 10 and installs legacy torch wheels; it does NOT `COPY . .` (commented), so you must mount the repo as a volume to run code.
-- `DFA_URL` must point at the DfAnalyzer service; `docker_up.sh` and README run the containers with `--link dfanalyzer:dfanalyzer` and `-e DFA_URL=http://dfanalyzer:22000/`.
-- `DfAnalyzer-Docker/README.txt` notes that `docker compose down` resets the MonetDB database and that the build expects extra assets downloaded from the linked Google Drive.
+## WHERE TO LOOK
+| Task | Location | Notes |
+|------|----------|-------|
+| Training scripts | `train.py`, `bert_pli_train.py` | Main entry points |
+| Model defs | `model/nlp/` | PyTorch architectures |
+| Data loading | `dataset/` | Custom PyTorch Dataset classes |
+| Workflows | `run_workflow.sh` | End-to-end pipeline |
+| Docker setup | `compose.yaml`, `Dockerfile` | Relies on CUDA 10/13+ |
 
-## Support/Qdrant
-- `support/README.md` is the source of truth for Qdrant workflows; it assumes a running Qdrant container and uses `uv run` commands from `support/`.
+## CONVENTIONS
+- Python 3.6 + legacy torch wheels for root environment.
+- Docker `DATAFLOW_TAG` required for end-to-end runs.
+- Qdrant logic isolated in `support/` with modern Python.
+
+## ANTI-PATTERNS (THIS PROJECT)
+- Do NOT mix `support/` (Py3.9+) with root `requirements.txt` (Py3.6).
+- Do NOT edit dataset paths without updating Docker mounts.
+
+## COMMANDS
+```bash
+# Build & Run DfAnalyzer
+cd DfAnalyzer-Docker && docker build -t dfanalyzer .
+docker run -itd --name dfanalyzer -p 22000:22000 -p 50000:50000 dfanalyzer
+
+# Train
+python3 train.py -c config/nlp/BertPoint.config -g 0
+```

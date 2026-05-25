@@ -20,3 +20,7 @@ log/
 __pycache__
 *un~
 **/.DS_Store
+.sisyphus/
+**/AGENTS.md
+!README.md
+*.md

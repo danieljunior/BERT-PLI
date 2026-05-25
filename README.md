@@ -29,7 +29,7 @@
 `docker build --no-cache --build-arg CUDA_IMAGE=nvidia/cuda:13.0.3-cudnn-runtime-ubuntu22.04 --tag bert-pli:cuda130-nightly .`
 
 - Start bert-pli container (Instructions to run in nvidia container)
-    - `USER_ID=${USER_ID} GROUP_ID=${GROUP_ID} docker run -itd --shm-size 5gb --name bert-pli --runtime nvidia -e NVIDIA_VISIBLE_DEVICES=7 -e DFA_URL=http://dfanalyzer:22000/ -v ${PWD}:/app -v /home/danieljunior/workspace/datasets/jurídicos/COLIEE\ dataset:/app/data --link dfanalyzer:dfanalyzer bert-pli:cuda130-nightly tail -f /dev/null`
+    - `docker run --user $(id -u):$(id -g) -itd --shm-size 5gb --name bert-pli --runtime nvidia -e NVIDIA_VISIBLE_DEVICES=7 -e DFA_URL=http://dfanalyzer:22000/ -v ${PWD}:/app -v /home/danieljunior/workspace/datasets/jurídicos/COLIEE\ dataset:/app/data --link dfanalyzer:dfanalyzer bert-pli:cuda130-nightly tail -f /dev/null`
 
     - `NV_GPU=5,7 USER_ID=${USER_ID} GROUP_ID=${GROUP_ID} nvidia-docker run -itd --rm --shm-size 5gb --name bert-pli -v ${PWD}:/app bert-pli:cuda130-nightly tail -f /dev/null`
 

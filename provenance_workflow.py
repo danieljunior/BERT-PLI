@@ -19,6 +19,8 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
+import json
+
 def load_env_file(env_file_path):
     """Load environment variables from .run_env file."""
     if not os.path.isfile(env_file_path):
@@ -183,6 +185,27 @@ def emit_calculate_metrics(provenance, test_labels_path, output_data):
     with provenance.get_retrospective_data(task, input_data) as result:
         result[result_key] = output_data
 
+def load_classifier_output(metrics_path, model_type):
+    if not os.path.exists(metrics_path):
+        logger.warning(f"Metrics file not found: {metrics_path}")
+        return []
+        
+    try:
+        with open(metrics_path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        
+        output = []
+        for result in data.get("results", []):
+            epoch = str(result["epoch"])
+            checkpoint = result["checkpoint"]
+            metrics_str = json.dumps(result.get("metrics", {}))
+            output.append([epoch, "/app/"+checkpoint, metrics_str])
+            
+        return output
+    except Exception as e:
+        logger.error(f"Error parsing metrics file {metrics_path}: {e}")
+        return []
+
 def main():
     parser = argparse.ArgumentParser(
         description='Emit provenance directives for BERT-PLI workflow in run_workflow.sh order'
@@ -224,13 +247,17 @@ def main():
     poolout_to_train_train_output = [[env_vars['TRAIN_DATA']]]
     poolout_test_output = [['1', env_vars['POOLOUT_TEST_RESULT'], test_sentences_file]]
     poolout_to_train_test_output = [[env_vars['TEST_DATA']]]
-    train_lstm_output = [['1', 'output/checkpoints/lstm/1.pkl', 'output/validation_1_lstm.json'],
-                         ['2', 'output/checkpoints/lstm/2.pkl', 'output/validation_2_lstm.json']]
+    train_lstm_output = load_classifier_output('output/results/summarized/attenlstm_valid_metrics.json', 'lstm')
+    if not train_lstm_output:
+        train_lstm_output = [['1', 'output/checkpoints/lstm/1.pkl', 'output/validation_1_lstm.json'],
+                             ['2', 'output/checkpoints/lstm/2.pkl', 'output/validation_2_lstm.json']]
     test_lstm_output = [[env_vars['LSTM_RESULTS']]]
     parse_lstm_results_output = [[env_vars['PARSED_LSTM_RESULTS']]]
     calculate_lstm_metrics_output = [[env_vars['LSTM_METRICS']]]
-    train_gru_output = [['1', 'output/checkpoints/gru/1.pkl', 'output/validation_1_gru.json'],
-                        ['2', 'output/checkpoints/gru/2.pkl', 'output/validation_2_gru.json']]
+    train_gru_output = load_classifier_output('output/results/summarized/attengru_valid_metrics.json', 'gru')
+    if not train_gru_output:
+        train_gru_output = [['1', 'output/checkpoints/gru/1.pkl', 'output/validation_1_gru.json'],
+                            ['2', 'output/checkpoints/gru/2.pkl', 'output/validation_2_gru.json']]
     test_gru_output = [[env_vars['GRU_RESULTS']]]
     parse_gru_results_output = [[env_vars['PARSED_GRU_RESULTS']]]
     calculate_gru_metrics_output = [[env_vars['GRU_METRICS']]]
