@@ -58,32 +58,51 @@ class AttentionTransformer(nn.Module):
         
         out = self.transformer(x)
         
-        pooled_out = out.mean(dim=1)
+        # 1. Captura os valores máximos E os índices de sobrevivência
+        max_values, max_indices = out.max(dim=1)
+        pooled_out = max_values
+        
+        # 2. Engenharia da "Atenção" baseada em Frequência de Features
+        batch_size = x.size(0)
+        seq_len = x.size(1) # Equivalente ao seu max_para_q (M)
+        
+        # Cria um tensor para armazenar os pesos
+        attention_weights = torch.zeros(batch_size, seq_len, device=x.device)
+        
+        for b in range(batch_size):
+            # Conta quantas dimensões cada bloco dominou
+            counts = torch.bincount(max_indices[b], minlength=seq_len)
+            # Normaliza para criar uma distribuição de pesos que soma 1.0
+            attention_weights[b] = counts.float() / counts.sum()
         
         pooled_out = self.dropout(pooled_out)
         y = self.fc_f(pooled_out)
         y = y.view(y.size()[0], -1)
 
+        # 3. Propagação dos pesos nos retornos (Formato exigido pelo seu script)
         if 'label' in data.keys():
             label = data['label']
             loss = self.criterion(y, label.view(-1))
             acc_result = self.accuracy_function(y, label, config, acc_result)
             if mode == 'valid' or mode == 'train':
                 output = []
-                y = y.cpu().detach().numpy().tolist()
+                y_lst = y.cpu().detach().numpy().tolist()
                 for i, guid in enumerate(data['guid']):
-                    output.append([guid, label[i], y[i]])
+                    output.append([guid, label[i], y_lst[i]])
                 return {"loss": loss, "acc_result": acc_result, "output": output}
             elif mode == 'test':
                 output = []
-                y = y.cpu().detach().numpy().tolist()
+                y_lst = y.cpu().detach().numpy().tolist()
+                w_lst = attention_weights.cpu().detach().numpy().tolist()
                 for i, guid in enumerate(data['guid']):
-                    output.append([guid, y[i]])
+                    # Injeta os pesos na saída: [guid, predição, pesos]
+                    output.append([guid, y_lst[i], w_lst[i]])
                 return {"output": output}
             return {"loss": loss, "acc_result": acc_result}
         else:
             output = []
-            y = y.cpu().detach().numpy().tolist()
+            y_lst = y.cpu().detach().numpy().tolist()
+            w_lst = attention_weights.cpu().detach().numpy().tolist()
             for i, guid in enumerate(data['guid']):
-                output.append([guid, y[i]])
+                output.append([guid, y_lst[i], w_lst[i]])
             return {"output": output}

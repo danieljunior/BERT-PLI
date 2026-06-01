@@ -14,15 +14,17 @@ class Attention(nn.Module):
         pass
 
     def forward(self, feature, hidden):
-        # hidden: B * M * H, feature: B * H * 1
         ratio = torch.bmm(hidden, feature)
-        # ratio: B * M * 1
         ratio = ratio.view(ratio.size(0), ratio.size(1))
-        ratio = F.softmax(ratio, dim=1).unsqueeze(2)
-        # result: B * H
-        result = torch.bmm(hidden.permute(0, 2, 1), ratio)
+        # Este é o seu vetor de destaque. Aplique softmax para normalizar entre 0 e 1.
+        attention_weights = F.softmax(ratio, dim=1) 
+        
+        ratio_expanded = attention_weights.unsqueeze(2)
+        result = torch.bmm(hidden.permute(0, 2, 1), ratio_expanded)
         result = result.view(result.size(0), -1)
-        return result
+        
+        # Retorne o resultado E os pesos (dimensão: Batch * max_para_q)
+        return result, attention_weights
 
 
 class AttentionRNN(nn.Module):
@@ -125,7 +127,7 @@ class AttentionRNN(nn.Module):
         feature = self.fc_a(feature) # B * 2H
         feature = feature.unsqueeze(2) # B * 2H * 1
 
-        atten_out = self.attention(feature, rnn_out) # B * (2H)
+        atten_out, atten_weights = self.attention(feature, rnn_out) # B * (2H)
         atten_out = self.dropout(atten_out)
         y = self.fc_f(atten_out)
 #         y = self.soft_max(y)
@@ -144,8 +146,9 @@ class AttentionRNN(nn.Module):
             elif mode == 'test':
                 output = []
                 y = y.cpu().detach().numpy().tolist()
+                weights = atten_weights.cpu().detach().numpy().tolist()
                 for i, guid in enumerate(data['guid']):
-                    output.append([guid, y[i]])
+                    output.append([guid, y[i], weights[i]])
                 return {"output": output}
             return {"loss": loss, "acc_result": acc_result}
         else:
@@ -154,13 +157,3 @@ class AttentionRNN(nn.Module):
             for i, guid in enumerate(data['guid']):
                 output.append([guid, y[i]])
             return {"output": output}
-
-
-
-
-
-
-
-
-
-
