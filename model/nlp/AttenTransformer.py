@@ -58,7 +58,8 @@ class AttentionTransformer(nn.Module):
         
         out = self.transformer(x)
         
-        pooled_out = out.mean(dim=1)
+        max_values = out.max(dim=1)[0]
+        pooled_out = max_values
         
         pooled_out = self.dropout(pooled_out)
         y = self.fc_f(pooled_out)
