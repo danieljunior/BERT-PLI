@@ -38,7 +38,7 @@ def test(parameters, config, gpu_list):
 
         ###### Extração de atenção para visualização ######
         model_name = model.__class__.__name__
-        if model_name == "AttenRNN":
+        if model_name == "AttentionRNN":
             attn_w = extract_attention_rnn(model, data, config, gpu_list)
         else:
             attn_w = extract_attention_transformer(model, data)

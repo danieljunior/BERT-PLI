@@ -1,6 +1,6 @@
-# FROM python:3.6-slim
-ARG CUDA_IMAGE=nvidia/cuda:13.0.3-cudnn-runtime-ubuntu22.04
-FROM ${CUDA_IMAGE}
+FROM python:3.10-slim
+# ARG CUDA_IMAGE=nvidia/cuda:13.0.3-cudnn-runtime-ubuntu22.04
+# FROM ${CUDA_IMAGE}
 
 ENV DFA_URL="http://dfanalyzer:22000/"
 # Set working directory
@@ -16,9 +16,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Copy requirements if you have them
 COPY requirements.txt .
-RUN python3 -m pip install --no-cache-dir --upgrade pip setuptools wheel && \
-    python3 -m pip install --no-cache-dir --pre torch --index-url https://download.pytorch.org/whl/nightly/cu130 && \
-    python3 -m pip install --no-cache-dir -r /app/requirements.txt
+# RUN python3 -m pip install --no-cache-dir --upgrade pip setuptools wheel && \
+    # python3 -m pip install --no-cache-dir --pre torch --index-url https://download.pytorch.org/whl/nightly/cu130 && \
+RUN python3 -m pip install --no-cache-dir -r /app/requirements.txt
 
 # Copy application code
 # COPY . .
