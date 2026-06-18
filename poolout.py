@@ -11,6 +11,9 @@ from tools.init_tool import init_all
 from tools.poolout_tool import pool_out
 from config_parser import create_config
 
+from provenance.retrospective_service import RetrospectiveService
+from provenance.prospective_service import ProspectiveService
+
 logging.basicConfig(format='%(asctime)s - %(levelname)s - %(name)s -   %(message)s',
                     datefmt='%m/%d/%Y %H:%M:%S',
                     level=logging.INFO)
@@ -23,8 +26,12 @@ if __name__ == "__main__":
     parser.add_argument('--gpu', '-g', help="gpu id list")
     parser.add_argument('--checkpoint', help="checkpoint file path")
     parser.add_argument('--result', help="result file path", required=True)
+    parser.add_argument('--test', help="test mode", action='store_true')
     args = parser.parse_args()
 
+    if os.path.exists(args.result):
+        logger.info(f"Result file already exists: {args.result}")
+        exit(0)
 
     configFilePath = args.config
 
@@ -50,18 +57,39 @@ if __name__ == "__main__":
         logger.error("CUDA is not available but specific gpu id")
         raise NotImplementedError
 
-    parameters = init_all(config, gpu_list, args.checkpoint, "poolout")
+    dataflow_tag = os.getenv('DATAFLOW_TAG', ProspectiveService.DEFAULT_DATAFLOW_TAG)
+    provenance = RetrospectiveService(dataflow_tag)
+    poolout_config = None
+    with open(configFilePath, 'r', encoding='utf-8') as f:
+        poolout_config = f.read()
+    if args.test:
+        dataset = ProspectiveService.DT_TEST_POOLOUT_CONFIG
+        task = ProspectiveService.TF_TEST_POOLOUT
+        result_key = ProspectiveService.DT_TEST_POOLOUT_DATA
+    else:
+        dataset = ProspectiveService.DT_TRAIN_POOLOUT_CONFIG
+        task = ProspectiveService.TF_TRAIN_POOLOUT
+        result_key = ProspectiveService.DT_TRAIN_POOLOUT_DATA
+    input_data = {dataset: [[poolout_config, args.checkpoint]],}
+    with provenance.get_retrospective_data(task, input_data) as result:
 
-    out_file = open(args.result, 'w', encoding='utf-8')
-    outputs = pool_out(parameters, config, gpu_list, args.result)
-    logger.info(f"Total number of outputs: {outputs}")
-    for output in outputs:
-        tmp_dict = {
-            'id_': output[0],
-            'res': output[1]
-        }
-        out_line = json.dumps(tmp_dict, ensure_ascii=False) + '\n'
-        out_file.write(out_line)
-    out_file.close()
+        if not os.path.exists(args.result):
+            out_file = open(args.result, 'w', encoding='utf-8')
+            parameters = init_all(config, gpu_list, args.checkpoint, "poolout")
+            outputs = pool_out(parameters, config, gpu_list, args.result)
+            logger.info(f"Total number of outputs: {outputs}")
+            for output in outputs:
+                tmp_dict = {
+                    'id_': output[0],
+                    'res': output[1]
+                }
+                out_line = json.dumps(tmp_dict, ensure_ascii=False) + '\n'
+                out_file.write(out_line)
+            out_file.close()
+        else:
+            logger.info(f"Result file already exists: {args.result}")
 
+        sentences_file = config.get("data", "test_data_path") + "/" + config.get("data", "test_file_list")
+        result[result_key] = [["1", args.result, sentences_file]]
     # train(parameters, config, gpu_list)
+    logger.info("Poolout completed")

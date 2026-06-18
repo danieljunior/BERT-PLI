@@ -1,10 +1,15 @@
 # -*- coding: utf-8 -*-
 __author__ = 'yshao'
 
+import os
 import argparse
 import json
 import logging
 from tqdm import tqdm
+
+from provenance.retrospective_service import RetrospectiveService
+from provenance.prospective_service import ProspectiveService
+
 logging.basicConfig(format='%(asctime)s - %(levelname)s - %(name)s -   %(message)s',
                     datefmt='%m/%d/%Y %H:%M:%S',
                     level=logging.INFO)
@@ -51,7 +56,25 @@ if __name__ == "__main__":
     parser.add_argument('--paras-file', '-in', help="input paragraphs file", required=True)
     parser.add_argument('--poolout-file', '-out', help="poolout file", required=True)
     parser.add_argument('--result', help="result file path", required=True)
-    args = parser.parse_args()
+    parser.add_argument('--test', help="test mode", action='store_true')
 
-    process_files(args.paras_file, args.poolout_file, args.result)
+    args = parser.parse_args()
+    
+    dataflow_tag = os.getenv('DATAFLOW_TAG', ProspectiveService.DEFAULT_DATAFLOW_TAG)
+    provenance = RetrospectiveService(dataflow_tag)
+    input_data = {}
+    if args.test:
+        task = ProspectiveService.TF_TEST_PARSE_POOLOUT
+        result_key = ProspectiveService.DT_TEST_PARSED_POOLOUT_DATA
+    else:
+        task = ProspectiveService.TF_TRAIN_PARSE_POOLOUT
+        result_key = ProspectiveService.DT_TRAIN_PARSED_POOLOUT_DATA
+    with provenance.get_retrospective_data(task, input_data) as result:
+        if not os.path.exists(args.result):
+            process_files(args.paras_file, args.poolout_file, args.result)
+        else:
+            print(f"Output file already exists. Exiting.")
+
+        result[result_key] = [[args.result]]
+
     logger.info("Processing completed")

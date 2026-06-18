@@ -1,21 +1,14 @@
 import json
 import os
+import sys
 
-def parse_gru_results(input_file, output_file):
-    """
-    Parse GRU results and create formatted output based on score comparison.
-    
-    Args:
-        input_file: Path to the input JSON file with GRU results
-        output_file: Path to the output JSON file to create
-    """
-    # Read the input file
-    with open(input_file, 'r') as f:
-        data = json.load(f)
-    
+from provenance.retrospective_service import RetrospectiveService
+from provenance.prospective_service import ProspectiveService
+
+def jsonl_to_collie_format(jsonl_data):
     result = {}
     
-    for entry in data:
+    for entry in jsonl_data:
         # Skip empty entries
         if not entry or len(entry) != 2:
             continue
@@ -54,6 +47,21 @@ def parse_gru_results(input_file, output_file):
     # Sort the results for consistent output
     for key in result:
         result[key] = sorted(list(set(result[key])))
+    return result
+
+def parse_gru_results(input_file, output_file):
+    """
+    Parse GRU results and create formatted output based on score comparison.
+    
+    Args:
+        input_file: Path to the input JSON file with GRU results
+        output_file: Path to the output JSON file to create
+    """
+    # Read the input file
+    with open(input_file, 'r') as f:
+        data = json.load(f)
+    
+    result = jsonl_to_collie_format(data)
     
     # Write the result to output file
     with open(output_file, 'w') as f:
@@ -62,25 +70,7 @@ def parse_gru_results(input_file, output_file):
     print(f"Parsed {len(data)} entries and created {len(result)} case mappings")
     print(f"Output saved to: {output_file}")
 
-def compute_metrics(labels_file, predicted_file, k_values=[1, 3, 5, 10]):
-    """
-    Compute precision, recall, F1-score and their @k variants.
-    
-    Args:
-        labels_file: Path to the ground truth labels JSON file
-        predicted_file: Path to the predicted results JSON file
-        k_values: List of k values for @k metrics
-    
-    Returns:
-        Dictionary containing all computed metrics
-    """
-    # Load data
-    with open(labels_file, 'r') as f:
-        labels = json.load(f)
-    
-    with open(predicted_file, 'r') as f:
-        predicted = json.load(f)
-    
+def metrics_from_collie_format(labels, predicted, k_values=[1, 3, 5, 10]):
     # Initialize counters
     total_true_positives = 0
     total_predicted = 0
@@ -145,6 +135,29 @@ def compute_metrics(labels_file, predicted_file, k_values=[1, 3, 5, 10]):
     
     return results
 
+def compute_metrics(labels_file, predicted_file, k_values=[1, 3, 5, 10]):
+    """
+    Compute precision, recall, F1-score and their @k variants.
+    
+    Args:
+        labels_file: Path to the ground truth labels JSON file
+        predicted_file: Path to the predicted results JSON file
+        k_values: List of k values for @k metrics
+    
+    Returns:
+        Dictionary containing all computed metrics
+    """
+    # Load data
+    with open(labels_file, 'r') as f:
+        labels = json.load(f)
+    
+    with open(predicted_file, 'r') as f:
+        predicted = json.load(f)
+    
+    results = metrics_from_collie_format(labels, predicted, k_values)
+    
+    return results
+
 def evaluate_predictions(labels_file, predicted_file, output_file=None):
     """
     Evaluate predictions against ground truth labels and print results.
@@ -195,8 +208,9 @@ def evaluate_predictions(labels_file, predicted_file, output_file=None):
     return metrics
 
 if __name__ == "__main__":
-    import sys
-    
+    dataflow_tag = os.getenv('DATAFLOW_TAG', ProspectiveService.DEFAULT_DATAFLOW_TAG)
+    provenance = RetrospectiveService(dataflow_tag)
+
     if len(sys.argv) > 1 and sys.argv[1] == "evaluate":
         # Evaluation mode
         if len(sys.argv) < 4:
@@ -206,14 +220,32 @@ if __name__ == "__main__":
         labels_file = sys.argv[2]
         predicted_file = sys.argv[3]
         output_file = sys.argv[4] if len(sys.argv) > 4 else None
-        
-        evaluate_predictions(labels_file, predicted_file, output_file)
-    else:
-        # Original GRU parsing mode
-        input_file = "output/results/gru_results.json"
-        output_file = "output/results/gru_parsed_result.json"
+
+        input_data = {ProspectiveService.DT_TRUE_LABELS: [[labels_file]]}
+        with provenance.get_retrospective_data(ProspectiveService.TF_CALCULATE_METRICS, 
+                                               input_data) as result:
+            if not os.path.exists(output_file):
+                evaluate_predictions(labels_file, predicted_file, output_file)
+            else:
+                print(f"Output file already exists. Exiting.")
+
+            result[ProspectiveService.DT_METRICS] = [[output_file]]
+
+    elif len(sys.argv) > 1 and sys.argv[1] == "parse":
+        if len(sys.argv) < 3:
+            print("Usage: python parse_results.py parse <input.json> <output.json>")
+            sys.exit(1)
+        input_file = sys.argv[2] # input_file = "output/results/gru_results.json"
+        output_file = sys.argv[3] # output_file = "output/results/gru_parsed_result.json"
         
         # Create output directory if it doesn't exist
         os.makedirs(os.path.dirname(output_file), exist_ok=True)
-        
-        parse_gru_results(input_file, output_file)
+        input_data = {}
+        with provenance.get_retrospective_data(ProspectiveService.TF_PARSE_RESULTS, 
+                                               input_data) as result:
+            if not os.path.exists(output_file):
+                parse_gru_results(input_file, output_file)
+            else:
+                print(f"Output file already exists. Exiting.")
+
+            result[ProspectiveService.DT_PARSED_TEST_RESULTS] = [[output_file]]

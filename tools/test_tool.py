@@ -5,6 +5,7 @@ from torch.autograd import Variable
 from timeit import default_timer as timer
 
 from tools.eval_tool import gen_time_str, output_value
+from extract_attention import extract_attention_rnn, extract_attention_transformer, plot_attention_heatmap
 
 logger = logging.getLogger(__name__)
 
@@ -34,6 +35,18 @@ def test(parameters, config, gpu_list):
                     data[key] = Variable(data[key])
 
         results = model(data, config, gpu_list, acc_result, "test")
+
+        ###### Extração de atenção para visualização ######
+        model_name = model.__class__.__name__
+        if model_name == "AttentionRNN":
+            attn_w = extract_attention_rnn(model, data, config, gpu_list)
+        else:
+            attn_w = extract_attention_transformer(model, data)
+
+        plot_attention_heatmap(attn_w[0], f"{model_name} - Exemplo {step}", f"output/heatmaps/{model_name.lower()}_{step}.png", 
+                               max_para_q=10, max_para_c=10)
+        ########################################################
+
         result = result + results["output"]
         cnt += 1
 

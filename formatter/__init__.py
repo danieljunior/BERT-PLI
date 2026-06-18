@@ -4,6 +4,7 @@ from .Basic import BasicFormatter
 from .nlp.BertPairTextFormatter import BertPairTextFormatter
 from .nlp.BertDocParaFormatter import BertDocParaFormatter
 from .nlp.AttenRNNFormatter import AttenRNNFormatter
+from .nlp.BertPliFormatter import BertPliFormatter
 
 logger = logging.getLogger(__name__)
 
@@ -11,7 +12,8 @@ formatter_list = {
     "Basic": BasicFormatter,
     "BertPairText": BertPairTextFormatter,
     "BertDocPara": BertDocParaFormatter,
-    'AttenRNN': AttenRNNFormatter
+    'AttenRNN': AttenRNNFormatter,
+    'BertPli': BertPliFormatter
 }
 
 

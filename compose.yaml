@@ -5,7 +5,9 @@ services:
     build:
       context: ./
       dockerfile: Dockerfile
-    image: bert-pli:latest
+      args:
+        CUDA_IMAGE: nvidia/cuda:13.0.3-cudnn-runtime-ubuntu22.04
+    image: bert-pli:cuda130-nightly
     container_name: bert-pli
     volumes:
       - ./:/app

@@ -1,1 +1,10 @@
 **/**.whl
+provenance/__pycache__/
+provenance/dfa-lib-python/docs/
+provenance/dfa-lib-python/build/
+provenance/dfa-lib-python/dfa_lib_python.egg-info/
+provenance/dfa-lib-python/dist/
+**/**.out
+support/**
+data/**
+output/**
