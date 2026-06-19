@@ -206,6 +206,7 @@ def main():
     input_data = {dataset: [[args.path, args.labels, mode]]}
     with provenance.get_retrospective_data(task, input_data) as result:
         if not os.path.exists(args.vanilla_output) and not os.path.exists(args.sumy_output):
+            print("Processing files...")
             process_files(args.path, args.labels, args.vanilla_output, args.sumy_output)
         else:
             print(f"Output files already exist. Exiting.")
