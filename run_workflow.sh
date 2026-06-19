@@ -86,7 +86,13 @@ run_command "python3 train.py -c $LSTM_CONFIG -g $LSTM_GPU" "train.py (lstm)"
 
 run_command "sleep 5" "sleep (wait for training to finish)"
 
-run_command "python3 test.py -c $LSTM_CONFIG -g $LSTM_GPU --checkpoint $LSTM_CHECKPOINT --result $LSTM_RESULTS" "test.py (lstm)"
+LSTM_CHECKPOINT_DIR=$(dirname "$LSTM_CHECKPOINT")
+rm -f /tmp/lstm_eval_valid.json
+run_command "python3 eval_valid.py -c $LSTM_CONFIG -g $LSTM_GPU --checkpoint-dir $LSTM_CHECKPOINT_DIR --result /tmp/lstm_eval_valid.json" "eval_valid.py (lstm)"
+BEST_LSTM_CHECKPOINT=$(python3 -c "import json; res=json.load(open('/tmp/lstm_eval_valid.json'))['results']; print(max(res, key=lambda x: x['metrics']['f1'])['checkpoint'])")
+echo "Best LSTM checkpoint: $BEST_LSTM_CHECKPOINT"
+
+run_command "python3 test.py -c $LSTM_CONFIG -g $LSTM_GPU --checkpoint $BEST_LSTM_CHECKPOINT --result $LSTM_RESULTS" "test.py (lstm)"
 
 run_command "sleep 5" "sleep (wait for testing to finish)"
 
@@ -96,9 +102,19 @@ run_command "python parse_results.py evaluate $TEST_LABELS $PARSED_LSTM_RESULTS 
 
 run_command "python3 train.py -c $GRU_CONFIG -g $GRU_GPU" "train.py (gru)"
 
+<<<<<<< HEAD
 run_command "sleep 5" "sleep (wait for training to finish)"
 
 run_command "python3 test.py -c $GRU_CONFIG -g $GRU_GPU --checkpoint $GRU_CHECKPOINT --result $GRU_RESULTS" "test.py (gru)"
+=======
+GRU_CHECKPOINT_DIR=$(dirname "$GRU_CHECKPOINT")
+rm -f /tmp/gru_eval_valid.json
+run_command "python3 eval_valid.py -c $GRU_CONFIG -g $GRU_GPU --checkpoint-dir $GRU_CHECKPOINT_DIR --result /tmp/gru_eval_valid.json" "eval_valid.py (gru)"
+BEST_GRU_CHECKPOINT=$(python3 -c "import json; res=json.load(open('/tmp/gru_eval_valid.json'))['results']; print(max(res, key=lambda x: x['metrics']['f1'])['checkpoint'])")
+echo "Best GRU checkpoint: $BEST_GRU_CHECKPOINT"
+
+run_command "python3 test.py -c $GRU_CONFIG -g $GRU_GPU --checkpoint $BEST_GRU_CHECKPOINT --result $GRU_RESULTS" "test.py (gru)"
+>>>>>>> 23cf6f9b6c2cc03644199f4c756bba837df55ac0
 
 run_command "sleep 5" "sleep (wait for conversion to finish)"
   
