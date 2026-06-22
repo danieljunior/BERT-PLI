@@ -6,7 +6,7 @@ from dfa_lib_python.dataflow import Dataflow
 
 class PersistenceService:
     """Service for managing transformation and dependency provenance objects."""
-    DEFAULT_STORAGE_DIR = '/app/provenance/storage/'
+    DEFAULT_STORAGE_DIR = './storage/'
 
     def __init__(self, dataflow_storage_dir: str = 'dataflow') -> None:
         """

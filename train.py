@@ -52,7 +52,7 @@ if __name__ == "__main__":
     mode = "train"
 
     dataflow_tag = os.getenv("DATAFLOW_TAG", ProspectiveService.DEFAULT_DATAFLOW_TAG)
-    provenance = RetrospectiveService(dataflow_tag)
+    provenance = RetrospectiveService(dataflow_tag, bypass=True)
     config_file = None
     with open(configFilePath, "r", encoding="utf-8") as f:
         config_file = f.read()

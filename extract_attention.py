@@ -7,7 +7,7 @@ import numpy as np
 import argparse
 
 # Funções utilitárias de plotagem
-def plot_attention_heatmap(attn_weights, title, output_path, max_para_q=None, max_para_c=None):
+def plot_attention_heatmap(data, attn_weights, title, output_path):
     """
     Plota a matriz de atenção como um heatmap e salva na pasta.
     Se a dimensão dos pesos for [M], ele tenta formatar para 2D (Q x C) 
@@ -15,26 +15,14 @@ def plot_attention_heatmap(attn_weights, title, output_path, max_para_q=None, ma
     """
     plt.figure(figsize=(12, 10))
     
-    # attn_weights deve ser [Q, C] idealmente. 
-    # Se for 1D, tentaremos formatar para Q x C se bater o tamanho.
-    if len(attn_weights.shape) == 1:
-        total_len = len(attn_weights)
-        if max_para_q and max_para_c and (max_para_q * max_para_c) == total_len:
-            attn_matrix = attn_weights.reshape(max_para_q, max_para_c)
-        else:
-            # Caso os parâmetros não batam, plota como barra ou expande
-            attn_matrix = np.expand_dims(attn_weights, axis=0)
-    else:
-        attn_matrix = attn_weights
-
-    ax = sns.heatmap(attn_matrix, cmap='viridis', 
-                xticklabels=[f"C{i}" for i in range(attn_matrix.shape[1])] if len(attn_matrix.shape) == 2 else False,
-                yticklabels=[f"Q{i}" for i in range(attn_matrix.shape[0])] if len(attn_matrix.shape) == 2 and attn_matrix.shape[0] > 1 else False)
+    ax = sns.heatmap(attn_weights, cmap='YlOrBr', 
+                xticklabels=[f"MP_{i}" for i in range(attn_weights.shape[1])] if len(attn_weights.shape) == 2 else False,
+                yticklabels=[f"{data['guid'][i]}" for i in range(attn_weights.shape[0])] if len(attn_weights.shape) == 2 and attn_weights.shape[0] > 1 else False)
     
     plt.title(title)
-    if len(attn_matrix.shape) == 2:
-        plt.xlabel("Case Segments (C)")
-        plt.ylabel("Query Segments (Q)")
+    if len(attn_weights.shape) == 2:
+        plt.xlabel("MaxPooling Index")
+        plt.ylabel("Cases Pairs (Query_Candidate)")
     
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     plt.savefig(output_path, bbox_inches='tight')
@@ -92,7 +80,7 @@ def extract_attention_transformer(model, data):
     # Assumimos que a arquitetura padrão usa model.transformer (que é TransformerEncoder)
     # e dentro possui layers
     hooks = []
-    for layer in model.transformer.layers:
+    for layer in model.transformer.module.layers:
         h = layer.self_attn.register_forward_hook(hook_fn)
         hooks.append(h)
     
