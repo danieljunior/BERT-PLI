@@ -50,7 +50,7 @@ if __name__ == "__main__":
         raise NotImplementedError
     
     dataflow_tag = os.getenv('DATAFLOW_TAG', ProspectiveService.DEFAULT_DATAFLOW_TAG)
-    provenance = RetrospectiveService(dataflow_tag)
+    provenance = RetrospectiveService(dataflow_tag, bypass=True)
     config_file = None
     with open(configFilePath, 'r', encoding='utf-8') as f:
         config_file = f.read()
@@ -62,7 +62,7 @@ if __name__ == "__main__":
 
             if config.getboolean('output', 'save_as_dict'):
                 out_file = open(args.result, 'w', encoding='utf-8')
-                outputs = test(parameters, config, gpu_list)
+                outputs = test(parameters, config, gpu_list, heatmap=False)
                 for output in outputs:
                     tmp_dict = {
                         'id_': output[0],

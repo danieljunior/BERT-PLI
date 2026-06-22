@@ -209,7 +209,7 @@ def evaluate_predictions(labels_file, predicted_file, output_file=None):
 
 if __name__ == "__main__":
     dataflow_tag = os.getenv('DATAFLOW_TAG', ProspectiveService.DEFAULT_DATAFLOW_TAG)
-    provenance = RetrospectiveService(dataflow_tag)
+    provenance = RetrospectiveService(dataflow_tag, bypass=True)
 
     if len(sys.argv) > 1 and sys.argv[1] == "evaluate":
         # Evaluation mode
