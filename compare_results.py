@@ -153,7 +153,7 @@ def main():
     parser = argparse.ArgumentParser(description="Compare model results and write a Markdown report.")
     parser.add_argument(
         "--output",
-        default="output/results/compare_results_report.md",
+        default="output/results/v2/compare_results_report.md",
         help="Path to the Markdown report to create.",
     )
     args = parser.parse_args()
@@ -162,7 +162,7 @@ def main():
     gt_path = 'data/COLIEE/task1_test_labels_2024.json'
     gt = load_json(gt_path, report)
 
-    report.heading(1, 'Compare vanilla/summarized/paragraph to test labels')
+    report.heading(1, 'Compare vanilla/summarized to test labels')
     report.emit(f"- Ground truth: `{gt_path}`")
     report.emit(f"- Report output: `{args.output}`")
     report.emit("")
@@ -175,9 +175,10 @@ def main():
     for model in ['lstm', 'gru', 'transformer']:
         report.heading(2, f"Evaluating Model: {model.upper()}")
 
-        vanilla_path = f'output/results/vanilla/{model}_parsed_results.json'
-        summarized_path = f'output/results/summarized/{model}_parsed_results.json'
-        paragraph_path = f'output/results/paragraph/{model}_parsed_results.json'
+        vanilla_path = f'output/results/v2/vanilla/{model}_parsed_results.json'
+        summarized_path = f'output/results/v2/summarized/{model}_parsed_results.json'
+        # paragraph_path = f'output/results/paragraph/{model}_parsed_results.json'
+        paragraph_path = None
 
         report.emit('Loading data...')
         vanilla = load_json(vanilla_path, report)
@@ -188,7 +189,7 @@ def main():
             'Summarized': summarized
         }
 
-        if model != 'transformer':
+        if model != 'transformer' and paragraph_path is not None:
             paragraph = load_json(paragraph_path, report)
             models['Paragraph'] = paragraph
 
