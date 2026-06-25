@@ -198,6 +198,38 @@ def write_result(result_path, checkpoint_dir, results):
     with open(result_path, "w", encoding="utf-8") as out_file:
         json.dump(payload, out_file, ensure_ascii=False, sort_keys=True, indent=2)
 
+def get_best_checkpoint(checkpoint_dir, config, gpu_list):
+    """Get the best checkpoint from a directory based on validation loss.
+
+    Example:
+        best_checkpoint = get_best_checkpoint("/tmp/checkpoints")
+    """
+    checkpoints = collect_checkpoint_paths(checkpoint_dir)
+    first_epoch, first_path = checkpoints[0]
+    parameters = init_all(config, gpu_list, first_path, "train")
+    model = parameters["model"]
+    valid_dataset = parameters["valid_dataset"]
+    output_function = parameters["output_function"]
+    writer = build_writer(config)
+    best_checkpoint = None
+    best_f1 = -1.0
+    for epoch, checkpoint_path in checkpoints:
+        if checkpoint_path != first_path:
+            load_checkpoint_state(model, checkpoint_path)
+        metrics = evaluate_checkpoint(
+            model,
+            valid_dataset,
+            config,
+            gpu_list,
+            output_function,
+            epoch,
+            writer,
+        )
+        if metrics.get("f1", -1.0) > best_f1:
+            best_f1 = metrics["f1"]
+            best_checkpoint = checkpoint_path
+    writer.close()
+    return best_checkpoint
 
 def main():
     """Run evaluation for a checkpoint or a directory of checkpoints.
