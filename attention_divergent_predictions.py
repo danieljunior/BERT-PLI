@@ -16,8 +16,8 @@ from eval_valid import get_best_checkpoint
 
 # MODELS_EVALUATED = ["lstm", "gru", "transformer"]
 MODELS_EVALUATED = ["lstm", "gru"]
-VARIANTS_EVALUATED = ["vanilla", "summarized"]
-# VARIANTS_EVALUATED = ["vanilla", "summarized", "paragraph"]
+# VARIANTS_EVALUATED = ["vanilla", "summarized"]
+VARIANTS_EVALUATED = ["vanilla", "summarized", "paragraph"]
 
 def load_inter_models_predictions(version, variant):
     """

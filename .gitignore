@@ -3,9 +3,10 @@ bert-pli/
 dumps/
 temp
 notebook
-result
-output/
-checkpoints/
+result/divergent
+**/**/*poolout*.json
+output/checkpoints/
+output/tensorboard/
 data/
 support/.venv
 qdrant/

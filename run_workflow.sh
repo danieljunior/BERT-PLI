@@ -72,55 +72,55 @@ run_command() {
 
 # run_command "sleep 1" "sleep (wait for poolout to finish)"
 
-# run_command "python3 poolout_to_train.py -in $TRAIN_PAIRS -out $POOLOUT_RESULT --result $TRAIN_DATA" "poolout_to_train.py"
+run_command "python3 poolout_to_train.py -in $TRAIN_PAIRS -out $POOLOUT_RESULT --result $TRAIN_DATA" "poolout_to_train.py"
 
-# run_command "sleep 1" "sleep (wait for conversion to finish)"
+run_command "sleep 1" "sleep (wait for conversion to finish)"
 
-# run_command "python3 poolout.py -c $POOLOUT_TEST_CONFIG -g $POOLOUT_GPU --checkpoint $BERT_CHECKPOINT --result $POOLOUT_TEST_RESULT --test" "poolout.py"
+run_command "python3 poolout.py -c $POOLOUT_TEST_CONFIG -g $POOLOUT_GPU --checkpoint $BERT_CHECKPOINT --result $POOLOUT_TEST_RESULT --test" "poolout.py"
 
-# run_command "sleep 1" "sleep (wait for poolout to finish)"
+run_command "sleep 1" "sleep (wait for poolout to finish)"
 
-# run_command "python3 poolout_to_train.py -in $TEST_PAIRS -out $POOLOUT_TEST_RESULT --result $TEST_DATA --test" "poolout_to_train.py"
+run_command "python3 poolout_to_train.py -in $TEST_PAIRS -out $POOLOUT_TEST_RESULT --result $TEST_DATA --test" "poolout_to_train.py"
 
-# run_command "sleep 1" "sleep (wait for conversion to finish)"
+run_command "sleep 1" "sleep (wait for conversion to finish)"
 
-#### LSTM
-run_command "python3 train.py -c $LSTM_CONFIG -g $LSTM_GPU" "train.py (lstm)"
+# #### LSTM
+# run_command "python3 train.py -c $LSTM_CONFIG -g $LSTM_GPU" "train.py (lstm)"
 
-run_command "sleep 5" "sleep (wait for training to finish)"
+# run_command "sleep 5" "sleep (wait for training to finish)"
 
-LSTM_CHECKPOINT_DIR=$(dirname "$LSTM_CHECKPOINT")
-rm -f /tmp/lstm_eval_valid.json
-run_command "python3 eval_valid.py -c $LSTM_CONFIG -g $LSTM_GPU --checkpoint-dir $LSTM_CHECKPOINT_DIR --result /tmp/lstm_eval_valid.json" "eval_valid.py (lstm)"
-BEST_LSTM_CHECKPOINT=$(python3 -c "import json; res=json.load(open('/tmp/lstm_eval_valid.json'))['results']; print(max(res, key=lambda x: x['metrics']['f1'])['checkpoint'])")
-echo "Best LSTM checkpoint: $BEST_LSTM_CHECKPOINT"
+# LSTM_CHECKPOINT_DIR=$(dirname "$LSTM_CHECKPOINT")
+# rm -f /tmp/lstm_eval_valid.json
+# run_command "python3 eval_valid.py -c $LSTM_CONFIG -g $LSTM_GPU --checkpoint-dir $LSTM_CHECKPOINT_DIR --result /tmp/lstm_eval_valid.json" "eval_valid.py (lstm)"
+# BEST_LSTM_CHECKPOINT=$(python3 -c "import json; res=json.load(open('/tmp/lstm_eval_valid.json'))['results']; print(max(res, key=lambda x: x['metrics']['f1'])['checkpoint'])")
+# echo "Best LSTM checkpoint: $BEST_LSTM_CHECKPOINT"
 
-run_command "python3 test.py -c $LSTM_CONFIG -g $LSTM_GPU --checkpoint $BEST_LSTM_CHECKPOINT --result $LSTM_RESULTS" "test.py (lstm)"
+# run_command "python3 test.py -c $LSTM_CONFIG -g $LSTM_GPU --checkpoint $BEST_LSTM_CHECKPOINT --result $LSTM_RESULTS" "test.py (lstm)"
 
-run_command "sleep 5" "sleep (wait for testing to finish)"
+# run_command "sleep 5" "sleep (wait for testing to finish)"
 
-run_command "python parse_results.py parse $LSTM_RESULTS $PARSED_LSTM_RESULTS" "parse_results.py (lstm)"
+# run_command "python parse_results.py parse $LSTM_RESULTS $PARSED_LSTM_RESULTS" "parse_results.py (lstm)"
 
-run_command "python parse_results.py evaluate $TEST_LABELS $PARSED_LSTM_RESULTS $LSTM_METRICS" "parse_results.py (evaluate lstm)"
+# run_command "python parse_results.py evaluate $TEST_LABELS $PARSED_LSTM_RESULTS $LSTM_METRICS" "parse_results.py (evaluate lstm)"
 
-### GRU
-run_command "python3 train.py -c $GRU_CONFIG -g $GRU_GPU" "train.py (gru)"
+# ### GRU
+# run_command "python3 train.py -c $GRU_CONFIG -g $GRU_GPU" "train.py (gru)"
 
-run_command "sleep 5" "sleep (wait for training to finish)"
+# run_command "sleep 5" "sleep (wait for training to finish)"
 
-GRU_CHECKPOINT_DIR=$(dirname "$GRU_CHECKPOINT")
-rm -f /tmp/gru_eval_valid.json
-run_command "python3 eval_valid.py -c $GRU_CONFIG -g $GRU_GPU --checkpoint-dir $GRU_CHECKPOINT_DIR --result /tmp/gru_eval_valid.json" "eval_valid.py (gru)"
-BEST_GRU_CHECKPOINT=$(python3 -c "import json; res=json.load(open('/tmp/gru_eval_valid.json'))['results']; print(max(res, key=lambda x: x['metrics']['f1'])['checkpoint'])")
-echo "Best GRU checkpoint: $BEST_GRU_CHECKPOINT"
+# GRU_CHECKPOINT_DIR=$(dirname "$GRU_CHECKPOINT")
+# rm -f /tmp/gru_eval_valid.json
+# run_command "python3 eval_valid.py -c $GRU_CONFIG -g $GRU_GPU --checkpoint-dir $GRU_CHECKPOINT_DIR --result /tmp/gru_eval_valid.json" "eval_valid.py (gru)"
+# BEST_GRU_CHECKPOINT=$(python3 -c "import json; res=json.load(open('/tmp/gru_eval_valid.json'))['results']; print(max(res, key=lambda x: x['metrics']['f1'])['checkpoint'])")
+# echo "Best GRU checkpoint: $BEST_GRU_CHECKPOINT"
 
-run_command "python3 test.py -c $GRU_CONFIG -g $GRU_GPU --checkpoint $BEST_GRU_CHECKPOINT --result $GRU_RESULTS" "test.py (gru)"
+# run_command "python3 test.py -c $GRU_CONFIG -g $GRU_GPU --checkpoint $BEST_GRU_CHECKPOINT --result $GRU_RESULTS" "test.py (gru)"
 
-run_command "sleep 5" "sleep (wait for conversion to finish)"
+# run_command "sleep 5" "sleep (wait for conversion to finish)"
   
-run_command "python parse_results.py parse $GRU_RESULTS $PARSED_GRU_RESULTS" "parse_results.py (gru)"
+# run_command "python parse_results.py parse $GRU_RESULTS $PARSED_GRU_RESULTS" "parse_results.py (gru)"
 
-run_command "python parse_results.py evaluate $TEST_LABELS $PARSED_GRU_RESULTS $GRU_METRICS" "parse_results.py (evaluate gru)"
+# run_command "python parse_results.py evaluate $TEST_LABELS $PARSED_GRU_RESULTS $GRU_METRICS" "parse_results.py (evaluate gru)"
 
 #### TRANSFORMER
 

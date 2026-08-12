@@ -152,46 +152,49 @@ def format_percent(value):
 def main():
     parser = argparse.ArgumentParser(description="Compare model results and write a Markdown report.")
     parser.add_argument(
-        "--output",
-        default="output/results/v2/compare_results_report.md",
+        "--output_path",
+        default="output/results/",
         help="Path to the Markdown report to create.",
+    )
+    parser.add_argument(
+        "--version",
+        default="v1",
+        help="Version of the results.",
     )
     args = parser.parse_args()
 
     report = MarkdownReport()
     gt_path = 'data/COLIEE/task1_test_labels_2024.json'
     gt = load_json(gt_path, report)
-
+    report_output_path = f"{args.output_path}/{args.version}_compare_results_report.md"
     report.heading(1, 'Compare vanilla/summarized to test labels')
     report.emit(f"- Ground truth: `{gt_path}`")
-    report.emit(f"- Report output: `{args.output}`")
+    report.emit(f"- Report output: `{report_output_path}`")
     report.emit("")
 
     if not gt:
         report.emit("Ground truth data could not be loaded, so no metrics were computed.")
-        report.write(args.output)
+        report.write(report_output_path)
         return
 
     for model in ['lstm', 'gru', 'transformer']:
         report.heading(2, f"Evaluating Model: {model.upper()}")
 
-        vanilla_path = f'output/results/v2/vanilla/{model}_parsed_results.json'
-        summarized_path = f'output/results/v2/summarized/{model}_parsed_results.json'
-        # paragraph_path = f'output/results/paragraph/{model}_parsed_results.json'
-        paragraph_path = None
+        vanilla_path = f'output/results/vanilla/{args.version}_{model}_parsed_results.json'
+        summarized_path = f'output/results/summarized/{args.version}_{model}_parsed_results.json'
+        paragraph_path = f'output/results/paragraph/{args.version}_{model}_parsed_results.json'
+        # paragraph_path = None
 
         report.emit('Loading data...')
         vanilla = load_json(vanilla_path, report)
         summarized = load_json(summarized_path, report)
+        paragraph = load_json(paragraph_path, report)
 
         models = {
             'Vanilla': vanilla,
-            'Summarized': summarized
+            'Summarized': summarized,
+            'Paragraph': paragraph
         }
-
-        if model != 'transformer' and paragraph_path is not None:
-            paragraph = load_json(paragraph_path, report)
-            models['Paragraph'] = paragraph
 
         report.heading(3, 'Performance vs Ground Truth')
         for name, preds in models.items():
@@ -260,14 +263,14 @@ def main():
                     format_percent(counts['unique_to_1'] / total_unique_preds * 100),
                 ])
 
-                report.emit(f'- Total unique (query, doc) predictions across all models: {total_unique_preds}')
+                report.emit(f'- Total unique (query, doc) predictions across all models: {total_unique_preds}\n')
                 report.table(['Category', 'Count', 'Percent'], overlap_rows)
         else:
             report.emit('- Not enough non-empty model outputs to compute overlap.')
             report.emit('')
 
     report.heading(1, 'Evaluation Complete')
-    report.write(args.output)
+    report.write(report_output_path)
 
 
 if __name__ == '__main__':

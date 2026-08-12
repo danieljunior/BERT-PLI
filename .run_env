@@ -8,51 +8,51 @@ FINETUNE_CONFIG=./config/nlp/BertPoint.config
 # -----------------------------
 POOLOUT_GPU=0
 BERT_CHECKPOINT=./output/checkpoints/bert_finetuned/2.pkl
-POOLOUT_CONFIG=./config/nlp/BertPoolOutMax.config
-POOLOUT_RESULT=./output/results/summarized/v2_train_poolout_max.json
-POOLOUT_TEST_CONFIG=./config/nlp/BertPoolOutMaxTest.config
-POOLOUT_TEST_RESULT=./output/results/summarized/v2_test_poolout_max.json
+POOLOUT_CONFIG=./config/nlp/v1/paragraph/BertPoolOutMax.config
+POOLOUT_RESULT=./output/results/paragraph/v1_train_poolout_max.json
+POOLOUT_TEST_CONFIG=./config/nlp/v1/paragraph/BertPoolOutMaxTest.config
+POOLOUT_TEST_RESULT=./output/results/paragraph/v1_test_poolout_max.json
 # -----------------------------
 # Data conversion
 # -----------------------------
-TRAIN_PAIRS=./data/COLIEE/train_summarized_sentences.json
+TRAIN_PAIRS=./data/COLIEE/train_vanilla_paragraph.json
 TRAIN_LABELS=./data/COLIEE/task1_train_labels_2024.json
-TRAIN_DATA=./output/results/summarized/v2_train_poolout.json
-TEST_DATA=./output/results/summarized/v2_test_poolout.json
+TRAIN_DATA=./output/results/paragraph/v1_train_poolout.json
+TEST_DATA=./output/results/paragraph/v1_test_poolout.json
 
 # -----------------------------
 # LSTM stage
 # -----------------------------
-LSTM_CONFIG=./config/nlp/AttenLSTM.config
+LSTM_CONFIG=./config/nlp/v1/paragraph/AttenLSTM.config
 LSTM_GPU=0
-LSTM_CHECKPOINT=./output/checkpoints/summarized/v2_attenlstm/59.pkl
-LSTM_RESULTS=./output/results/summarized/v2_lstm_results.json   
-PARSED_LSTM_RESULTS=./output/results/summarized/v2_lstm_parsed_results.json
-LSTM_METRICS=./output/results/summarized/v2_lstm_metrics.json
+LSTM_CHECKPOINT=./output/checkpoints/paragraph/v1_attenlstm/59.pkl
+LSTM_RESULTS=./output/results/paragraph/v1_lstm_results.json   
+PARSED_LSTM_RESULTS=./output/results/paragraph/v1_lstm_parsed_results.json
+LSTM_METRICS=./output/results/paragraph/v1_lstm_metrics.json
 
 # -----------------------------
 # GRU stage
 # -----------------------------
-GRU_CONFIG=./config/nlp/AttenGRU.config
+GRU_CONFIG=./config/nlp/v1/paragraph/AttenGRU.config
 GRU_GPU=0
-GRU_CHECKPOINT=./output/checkpoints/summarized/v2_attengru/59.pkl
-GRU_RESULTS=./output/results/summarized/v2_gru_results.json
-PARSED_GRU_RESULTS=./output/results/summarized/v2_gru_parsed_results.json
-GRU_METRICS=./output/results/summarized/v2_gru_metrics.json
+GRU_CHECKPOINT=./output/checkpoints/paragraph/v1_attengru/59.pkl
+GRU_RESULTS=./output/results/paragraph/v1_gru_results.json
+PARSED_GRU_RESULTS=./output/results/paragraph/v1_gru_parsed_results.json
+GRU_METRICS=./output/results/paragraph/v1_gru_metrics.json
 
 # -----------------------------
 # TRANSFORMER stage
 # -----------------------------
-TRANSFORMER_CONFIG=./config/nlp/AttenTransformer.config
+TRANSFORMER_CONFIG=./config/nlp/v1/paragraph/AttenTransformer.config
 TRANSFORMER_GPU=0
-TRANSFORMER_CHECKPOINT=./output/checkpoints/summarized/v2_attentransformer/59.pkl
-TRANSFORMER_RESULTS=./output/results/summarized/v2_transformer_results.json
-PARSED_TRANSFORMER_RESULTS=./output/results/summarized/v2_transformer_parsed_results.json
-TRANSFORMER_METRICS=./output/results/summarized/v2_transformer_metrics.json
+TRANSFORMER_CHECKPOINT=./output/checkpoints/paragraph/v1_attentransformer/59.pkl
+TRANSFORMER_RESULTS=./output/results/paragraph/v1_transformer_results.json
+PARSED_TRANSFORMER_RESULTS=./output/results/paragraph/v1_transformer_parsed_results.json
+TRANSFORMER_METRICS=./output/results/paragraph/v1_transformer_metrics.json
 
 
 # -----------------------------
 # Evaluation
 # -----------------------------
-TEST_PAIRS=./data/COLIEE/test_summarized_sentences.json
+TEST_PAIRS=./data/COLIEE/test_vanilla_paragraph.json
 TEST_LABELS=./data/COLIEE/task1_test_labels_2024.json

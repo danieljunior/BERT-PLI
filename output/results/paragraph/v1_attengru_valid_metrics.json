@@ -1,0 +1,595 @@
+{
+  "checkpoint_dir": "/app/output/checkpoints/paragraph/attengru",
+  "results": [
+    {
+      "checkpoint": "/app/output/checkpoints/paragraph/attengru/1.pkl",
+      "epoch": 1,
+      "metrics": {
+        "precision": 1.0,
+        "recall": 0.5914948453608248,
+        "f1": 0.7433198380566801,
+        "loss": 0.6472298813234899
+      }
+    },
+    {
+      "checkpoint": "/app/output/checkpoints/paragraph/attengru/2.pkl",
+      "epoch": 2,
+      "metrics": {
+        "precision": 1.0,
+        "recall": 0.4333118556701031,
+        "f1": 0.6046302539896606,
+        "loss": 0.6670938871570469
+      }
+    },
+    {
+      "checkpoint": "/app/output/checkpoints/paragraph/attengru/3.pkl",
+      "epoch": 3,
+      "metrics": {
+        "precision": 1.0,
+        "recall": 0.5070876288659794,
+        "f1": 0.6729371526293287,
+        "loss": 0.6592259376319414
+      }
+    },
+    {
+      "checkpoint": "/app/output/checkpoints/paragraph/attengru/4.pkl",
+      "epoch": 4,
+      "metrics": {
+        "precision": 1.0,
+        "recall": 0.4790592783505155,
+        "f1": 0.6477891526900458,
+        "loss": 0.6606949168382231
+      }
+    },
+    {
+      "checkpoint": "/app/output/checkpoints/paragraph/attengru/5.pkl",
+      "epoch": 5,
+      "metrics": {
+        "precision": 1.0,
+        "recall": 0.7258376288659794,
+        "f1": 0.8411424304648124,
+        "loss": 0.6622782788940311
+      }
+    },
+    {
+      "checkpoint": "/app/output/checkpoints/paragraph/attengru/6.pkl",
+      "epoch": 6,
+      "metrics": {
+        "precision": 1.0,
+        "recall": 0.7000644329896907,
+        "f1": 0.8235740003790032,
+        "loss": 0.6502710906500669
+      }
+    },
+    {
+      "checkpoint": "/app/output/checkpoints/paragraph/attengru/7.pkl",
+      "epoch": 7,
+      "metrics": {
+        "precision": 1.0,
+        "recall": 0.5615335051546392,
+        "f1": 0.7192077573756963,
+        "loss": 0.6469977771498493
+      }
+    },
+    {
+      "checkpoint": "/app/output/checkpoints/paragraph/attengru/8.pkl",
+      "epoch": 8,
+      "metrics": {
+        "precision": 1.0,
+        "recall": 0.6394974226804123,
+        "f1": 0.78011397131067,
+        "loss": 0.6448349491837099
+      }
+    },
+    {
+      "checkpoint": "/app/output/checkpoints/paragraph/attengru/9.pkl",
+      "epoch": 9,
+      "metrics": {
+        "precision": 1.0,
+        "recall": 0.6639819587628866,
+        "f1": 0.7980638915779283,
+        "loss": 0.645235704392502
+      }
+    },
+    {
+      "checkpoint": "/app/output/checkpoints/paragraph/attengru/10.pkl",
+      "epoch": 10,
+      "metrics": {
+        "precision": 1.0,
+        "recall": 0.7712628865979382,
+        "f1": 0.8708621316842488,
+        "loss": 0.6604354756394613
+      }
+    },
+    {
+      "checkpoint": "/app/output/checkpoints/paragraph/attengru/11.pkl",
+      "epoch": 11,
+      "metrics": {
+        "precision": 1.0,
+        "recall": 0.7032860824742269,
+        "f1": 0.8257991299413656,
+        "loss": 0.6476519544100025
+      }
+    },
+    {
+      "checkpoint": "/app/output/checkpoints/paragraph/attengru/12.pkl",
+      "epoch": 12,
+      "metrics": {
+        "precision": 1.0,
+        "recall": 0.6121134020618557,
+        "f1": 0.7593924860111911,
+        "loss": 0.6450624057312602
+      }
+    },
+    {
+      "checkpoint": "/app/output/checkpoints/paragraph/attengru/13.pkl",
+      "epoch": 13,
+      "metrics": {
+        "precision": 1.0,
+        "recall": 0.7290592783505154,
+        "f1": 0.8433016582820942,
+        "loss": 0.6501225512666801
+      }
+    },
+    {
+      "checkpoint": "/app/output/checkpoints/paragraph/attengru/14.pkl",
+      "epoch": 14,
+      "metrics": {
+        "precision": 1.0,
+        "recall": 0.6378865979381443,
+        "f1": 0.7789142407553108,
+        "loss": 0.6446304739136057
+      }
+    },
+    {
+      "checkpoint": "/app/output/checkpoints/paragraph/attengru/15.pkl",
+      "epoch": 15,
+      "metrics": {
+        "precision": 1.0,
+        "recall": 0.5057989690721649,
+        "f1": 0.6718014548566538,
+        "loss": 0.6490857607310581
+      }
+    },
+    {
+      "checkpoint": "/app/output/checkpoints/paragraph/attengru/16.pkl",
+      "epoch": 16,
+      "metrics": {
+        "precision": 1.0,
+        "recall": 0.8063788659793815,
+        "f1": 0.8928125557339041,
+        "loss": 0.6688409542914519
+      }
+    },
+    {
+      "checkpoint": "/app/output/checkpoints/paragraph/attengru/17.pkl",
+      "epoch": 17,
+      "metrics": {
+        "precision": 1.0,
+        "recall": 0.7422680412371134,
+        "f1": 0.8520710059171598,
+        "loss": 0.6521725319709974
+      }
+    },
+    {
+      "checkpoint": "/app/output/checkpoints/paragraph/attengru/18.pkl",
+      "epoch": 18,
+      "metrics": {
+        "precision": 1.0,
+        "recall": 0.8250644329896907,
+        "f1": 0.9041482789055605,
+        "loss": 0.6775741315994066
+      }
+    },
+    {
+      "checkpoint": "/app/output/checkpoints/paragraph/attengru/19.pkl",
+      "epoch": 19,
+      "metrics": {
+        "precision": 1.0,
+        "recall": 0.6224226804123711,
+        "f1": 0.767275615567911,
+        "loss": 0.6446628883941886
+      }
+    },
+    {
+      "checkpoint": "/app/output/checkpoints/paragraph/attengru/20.pkl",
+      "epoch": 20,
+      "metrics": {
+        "precision": 1.0,
+        "recall": 0.8298969072164949,
+        "f1": 0.9070422535211268,
+        "loss": 0.6794742699136439
+      }
+    },
+    {
+      "checkpoint": "/app/output/checkpoints/paragraph/attengru/21.pkl",
+      "epoch": 21,
+      "metrics": {
+        "precision": 1.0,
+        "recall": 0.7860824742268041,
+        "f1": 0.8802308802308803,
+        "loss": 0.661014386980804
+      }
+    },
+    {
+      "checkpoint": "/app/output/checkpoints/paragraph/attengru/22.pkl",
+      "epoch": 22,
+      "metrics": {
+        "precision": 1.0,
+        "recall": 0.7644974226804123,
+        "f1": 0.8665327734161036,
+        "loss": 0.657303043861979
+      }
+    },
+    {
+      "checkpoint": "/app/output/checkpoints/paragraph/attengru/23.pkl",
+      "epoch": 23,
+      "metrics": {
+        "precision": 1.0,
+        "recall": 0.6494845360824743,
+        "f1": 0.7875000000000001,
+        "loss": 0.6445096639013782
+      }
+    },
+    {
+      "checkpoint": "/app/output/checkpoints/paragraph/attengru/24.pkl",
+      "epoch": 24,
+      "metrics": {
+        "precision": 1.0,
+        "recall": 0.8279639175257731,
+        "f1": 0.9058864998237575,
+        "loss": 0.6772977887969656
+      }
+    },
+    {
+      "checkpoint": "/app/output/checkpoints/paragraph/attengru/25.pkl",
+      "epoch": 25,
+      "metrics": {
+        "precision": 1.0,
+        "recall": 0.7870489690721649,
+        "f1": 0.8808364881918154,
+        "loss": 0.6621150549539586
+      }
+    },
+    {
+      "checkpoint": "/app/output/checkpoints/paragraph/attengru/26.pkl",
+      "epoch": 26,
+      "metrics": {
+        "precision": 1.0,
+        "recall": 0.7667525773195877,
+        "f1": 0.8679795769511307,
+        "loss": 0.6583621572587908
+      }
+    },
+    {
+      "checkpoint": "/app/output/checkpoints/paragraph/attengru/27.pkl",
+      "epoch": 27,
+      "metrics": {
+        "precision": 1.0,
+        "recall": 0.7268041237113402,
+        "f1": 0.8417910447761193,
+        "loss": 0.6503729463852558
+      }
+    },
+    {
+      "checkpoint": "/app/output/checkpoints/paragraph/attengru/28.pkl",
+      "epoch": 28,
+      "metrics": {
+        "precision": 1.0,
+        "recall": 0.7445231958762887,
+        "f1": 0.8535549399815329,
+        "loss": 0.652500962166442
+      }
+    },
+    {
+      "checkpoint": "/app/output/checkpoints/paragraph/attengru/29.pkl",
+      "epoch": 29,
+      "metrics": {
+        "precision": 1.0,
+        "recall": 0.8063788659793815,
+        "f1": 0.8928125557339041,
+        "loss": 0.6658213912826223
+      }
+    },
+    {
+      "checkpoint": "/app/output/checkpoints/paragraph/attengru/30.pkl",
+      "epoch": 30,
+      "metrics": {
+        "precision": 1.0,
+        "recall": 0.7077963917525774,
+        "f1": 0.8289002075080174,
+        "loss": 0.6475498200077372
+      }
+    },
+    {
+      "checkpoint": "/app/output/checkpoints/paragraph/attengru/31.pkl",
+      "epoch": 31,
+      "metrics": {
+        "precision": 1.0,
+        "recall": 0.7013530927835051,
+        "f1": 0.8244650634349555,
+        "loss": 0.6474310347099894
+      }
+    },
+    {
+      "checkpoint": "/app/output/checkpoints/paragraph/attengru/32.pkl",
+      "epoch": 32,
+      "metrics": {
+        "precision": 1.0,
+        "recall": 0.8289304123711341,
+        "f1": 0.9064646820503788,
+        "loss": 0.6745043043623266
+      }
+    },
+    {
+      "checkpoint": "/app/output/checkpoints/paragraph/attengru/33.pkl",
+      "epoch": 33,
+      "metrics": {
+        "precision": 1.0,
+        "recall": 0.7912371134020618,
+        "f1": 0.883453237410072,
+        "loss": 0.6621613625398616
+      }
+    },
+    {
+      "checkpoint": "/app/output/checkpoints/paragraph/attengru/34.pkl",
+      "epoch": 34,
+      "metrics": {
+        "precision": 1.0,
+        "recall": 0.7580541237113402,
+        "f1": 0.8623785962983324,
+        "loss": 0.6557691524323729
+      }
+    },
+    {
+      "checkpoint": "/app/output/checkpoints/paragraph/attengru/35.pkl",
+      "epoch": 35,
+      "metrics": {
+        "precision": 1.0,
+        "recall": 0.7396907216494846,
+        "f1": 0.8503703703703704,
+        "loss": 0.6513517489752818
+      }
+    },
+    {
+      "checkpoint": "/app/output/checkpoints/paragraph/attengru/36.pkl",
+      "epoch": 36,
+      "metrics": {
+        "precision": 1.0,
+        "recall": 0.84375,
+        "f1": 0.9152542372881356,
+        "loss": 0.6830247195111108
+      }
+    },
+    {
+      "checkpoint": "/app/output/checkpoints/paragraph/attengru/37.pkl",
+      "epoch": 37,
+      "metrics": {
+        "precision": 1.0,
+        "recall": 0.7593427835051546,
+        "f1": 0.8632118659586155,
+        "loss": 0.6557289561660019
+      }
+    },
+    {
+      "checkpoint": "/app/output/checkpoints/paragraph/attengru/38.pkl",
+      "epoch": 38,
+      "metrics": {
+        "precision": 1.0,
+        "recall": 0.7364690721649485,
+        "f1": 0.8482374768089054,
+        "loss": 0.6514559643170268
+      }
+    },
+    {
+      "checkpoint": "/app/output/checkpoints/paragraph/attengru/39.pkl",
+      "epoch": 39,
+      "metrics": {
+        "precision": 1.0,
+        "recall": 0.6556056701030928,
+        "f1": 0.7919828760459233,
+        "loss": 0.6445974787485969
+      }
+    },
+    {
+      "checkpoint": "/app/output/checkpoints/paragraph/attengru/40.pkl",
+      "epoch": 40,
+      "metrics": {
+        "precision": 1.0,
+        "recall": 0.7912371134020618,
+        "f1": 0.883453237410072,
+        "loss": 0.6614248528308475
+      }
+    },
+    {
+      "checkpoint": "/app/output/checkpoints/paragraph/attengru/41.pkl",
+      "epoch": 41,
+      "metrics": {
+        "precision": 1.0,
+        "recall": 0.7648195876288659,
+        "f1": 0.8667396860167944,
+        "loss": 0.656631350517273
+      }
+    },
+    {
+      "checkpoint": "/app/output/checkpoints/paragraph/attengru/42.pkl",
+      "epoch": 42,
+      "metrics": {
+        "precision": 1.0,
+        "recall": 0.7818943298969072,
+        "f1": 0.8775989875248599,
+        "loss": 0.6601923642699251
+      }
+    },
+    {
+      "checkpoint": "/app/output/checkpoints/paragraph/attengru/43.pkl",
+      "epoch": 43,
+      "metrics": {
+        "precision": 1.0,
+        "recall": 0.6623711340206185,
+        "f1": 0.7968992248062016,
+        "loss": 0.6445764349293464
+      }
+    },
+    {
+      "checkpoint": "/app/output/checkpoints/paragraph/attengru/44.pkl",
+      "epoch": 44,
+      "metrics": {
+        "precision": 1.0,
+        "recall": 0.6343427835051546,
+        "f1": 0.7762665089690518,
+        "loss": 0.6442391921564475
+      }
+    },
+    {
+      "checkpoint": "/app/output/checkpoints/paragraph/attengru/45.pkl",
+      "epoch": 45,
+      "metrics": {
+        "precision": 1.0,
+        "recall": 0.6887886597938144,
+        "f1": 0.8157191911484166,
+        "loss": 0.6455563349822133
+      }
+    },
+    {
+      "checkpoint": "/app/output/checkpoints/paragraph/attengru/46.pkl",
+      "epoch": 46,
+      "metrics": {
+        "precision": 1.0,
+        "recall": 0.7213273195876289,
+        "f1": 0.838105932996444,
+        "loss": 0.6488767536645083
+      }
+    },
+    {
+      "checkpoint": "/app/output/checkpoints/paragraph/attengru/47.pkl",
+      "epoch": 47,
+      "metrics": {
+        "precision": 1.0,
+        "recall": 0.7715850515463918,
+        "f1": 0.8710674668121476,
+        "loss": 0.6573322095821813
+      }
+    },
+    {
+      "checkpoint": "/app/output/checkpoints/paragraph/attengru/48.pkl",
+      "epoch": 48,
+      "metrics": {
+        "precision": 1.0,
+        "recall": 0.819909793814433,
+        "f1": 0.9010444326429456,
+        "loss": 0.672071241226393
+      }
+    },
+    {
+      "checkpoint": "/app/output/checkpoints/paragraph/attengru/49.pkl",
+      "epoch": 49,
+      "metrics": {
+        "precision": 1.0,
+        "recall": 0.6269329896907216,
+        "f1": 0.7706930693069307,
+        "loss": 0.644444807288573
+      }
+    },
+    {
+      "checkpoint": "/app/output/checkpoints/paragraph/attengru/50.pkl",
+      "epoch": 50,
+      "metrics": {
+        "precision": 1.0,
+        "recall": 0.7384020618556701,
+        "f1": 0.8495181616011861,
+        "loss": 0.6515166375440421
+      }
+    },
+    {
+      "checkpoint": "/app/output/checkpoints/paragraph/attengru/51.pkl",
+      "epoch": 51,
+      "metrics": {
+        "precision": 1.0,
+        "recall": 0.6952319587628866,
+        "f1": 0.8202204484986697,
+        "loss": 0.6463266325365636
+      }
+    },
+    {
+      "checkpoint": "/app/output/checkpoints/paragraph/attengru/52.pkl",
+      "epoch": 52,
+      "metrics": {
+        "precision": 1.0,
+        "recall": 0.625,
+        "f1": 0.7692307692307693,
+        "loss": 0.6437625798982444
+      }
+    },
+    {
+      "checkpoint": "/app/output/checkpoints/paragraph/attengru/53.pkl",
+      "epoch": 53,
+      "metrics": {
+        "precision": 1.0,
+        "recall": 0.8588917525773195,
+        "f1": 0.9240901213171577,
+        "loss": 0.6908994599715951
+      }
+    },
+    {
+      "checkpoint": "/app/output/checkpoints/paragraph/attengru/54.pkl",
+      "epoch": 54,
+      "metrics": {
+        "precision": 1.0,
+        "recall": 0.7860824742268041,
+        "f1": 0.8802308802308803,
+        "loss": 0.6595452848783473
+      }
+    },
+    {
+      "checkpoint": "/app/output/checkpoints/paragraph/attengru/55.pkl",
+      "epoch": 55,
+      "metrics": {
+        "precision": 1.0,
+        "recall": 0.6559278350515464,
+        "f1": 0.7922178988326849,
+        "loss": 0.6444949747360859
+      }
+    },
+    {
+      "checkpoint": "/app/output/checkpoints/paragraph/attengru/56.pkl",
+      "epoch": 56,
+      "metrics": {
+        "precision": 1.0,
+        "recall": 0.8076675257731959,
+        "f1": 0.8936018535020495,
+        "loss": 0.667485756665161
+      }
+    },
+    {
+      "checkpoint": "/app/output/checkpoints/paragraph/attengru/57.pkl",
+      "epoch": 57,
+      "metrics": {
+        "precision": 1.0,
+        "recall": 0.6717139175257731,
+        "f1": 0.8036230487569859,
+        "loss": 0.6455796235000965
+      }
+    },
+    {
+      "checkpoint": "/app/output/checkpoints/paragraph/attengru/58.pkl",
+      "epoch": 58,
+      "metrics": {
+        "precision": 1.0,
+        "recall": 0.4855025773195876,
+        "f1": 0.6536543049230102,
+        "loss": 0.6481248920725793
+      }
+    },
+    {
+      "checkpoint": "/app/output/checkpoints/paragraph/attengru/59.pkl",
+      "epoch": 59,
+      "metrics": {
+        "precision": 1.0,
+        "recall": 0.7442010309278351,
+        "f1": 0.8533431843369044,
+        "loss": 0.6519317645387551
+      }
+    }
+  ]
+}
