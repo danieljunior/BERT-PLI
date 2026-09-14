@@ -9,6 +9,8 @@ output/checkpoints/
 output/tensorboard/
 data/
 support/.venv
+.venv_mcnemar/
+.venv/
 qdrant/
 backup_qdrant/
 config/default_local.config
@@ -25,5 +27,6 @@ __pycache__
 **/.DS_Store
 .sisyphus/
 **/AGENTS.md
-!README.md
 *.md
+!README.md
+!docs/*.md
