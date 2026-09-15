@@ -42,9 +42,9 @@ def test(parameters, config, gpu_list):
             attn_w = extract_attention_rnn(model, data, config, gpu_list)
         else:
             attn_w = extract_attention_transformer(model, data)
-
-        plot_attention_heatmap(attn_w[0], f"{model_name} - Exemplo {step}", f"output/heatmaps/{model_name.lower()}_{step}.png", 
-                               max_para_q=10, max_para_c=10)
+        import pdb; pdb.set_trace()
+        heatmap_path = config.get("data", "test_data_path") + f"/heatmaps/{model_name.lower()}/"
+        plot_attention_heatmap(data, attn_w, f"{model_name} - Batch {step}", f"{heatmap_path}{step}.png")
         ########################################################
 
         result = result + results["output"]

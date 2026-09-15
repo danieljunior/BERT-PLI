@@ -1,3 +1,5 @@
+.bert-pli/
+*.log
 dumps/
 temp
 notebook

@@ -8,10 +8,10 @@ FINETUNE_CONFIG=/app/config/nlp/BertPoint.config
 # -----------------------------
 POOLOUT_GPU=0,1
 BERT_CHECKPOINT=/app/output/checkpoints/bert_finetuned/2.pkl
-POOLOUT_CONFIG=/app/config/nlp/BertPoolOutMax.config
-POOLOUT_RESULT=/app/output/results/vanilla/v2_train_poolout_max.json
-POOLOUT_TEST_CONFIG=/app/config/nlp/BertPoolOutMaxTest.config
-POOLOUT_TEST_RESULT=/app/output/results/vanilla/v2_test_poolout_max.json
+POOLOUT_CONFIG=/app/config/nlp/v3/BertPoolOutMax.config
+POOLOUT_RESULT=/app/output/results/vanilla/v3_train_poolout_max.json
+POOLOUT_TEST_CONFIG=/app/config/nlp/v3/BertPoolOutMaxTest.config
+POOLOUT_TEST_RESULT=/app/output/results/vanilla/v3_test_poolout_max.json
 # -----------------------------
 # Data conversion
 # -----------------------------
