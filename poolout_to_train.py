@@ -61,7 +61,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     
     dataflow_tag = os.getenv('DATAFLOW_TAG', ProspectiveService.DEFAULT_DATAFLOW_TAG)
-    provenance = RetrospectiveService(dataflow_tag)
+    provenance = RetrospectiveService(dataflow_tag, bypass=True)
     input_data = {}
     if args.test:
         task = ProspectiveService.TF_TEST_PARSE_POOLOUT

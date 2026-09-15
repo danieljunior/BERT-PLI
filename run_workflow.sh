@@ -30,6 +30,7 @@ fi
 : "${BERT_CHECKPOINT:?Missing BERT_CHECKPOINT in .env}"
 : "${POOLOUT_RESULT:?Missing POOLOUT_RESULT in .env}"
 : "${POOLOUT_TEST_RESULT:?Missing POOLOUT_TEST_RESULT in .env}"
+: "${TRAIN_PAIRS:?Missing TRAIN_PAIRS in .env}"
 : "${TRAIN_LABELS:?Missing TRAIN_LABELS in .env}"
 : "${TRAIN_DATA:?Missing TRAIN_DATA in .env}"
 : "${TEST_DATA:?Missing TEST_DATA in .env}"
@@ -42,6 +43,7 @@ fi
 : "${GRU_CHECKPOINT:?Missing GRU_CHECKPOINT in .env}"
 : "${GRU_RESULTS:?Missing GRU_RESULTS in .env}"
 : "${PARSED_GRU_RESULTS:?Missing PARSED_GRU_RESULTS in .env}"
+: "${TEST_PAIRS:?Missing TEST_PAIRS in .env}"
 : "${TEST_LABELS:?Missing TEST_LABELS in .env}"
 : "${GRU_METRICS:?Missing GRU_METRICS in .env}"
 : "${PARSED_LSTM_RESULTS:?Missing PARSED_LSTM_RESULTS in .env}"
@@ -58,27 +60,27 @@ run_command() {
     fi
 }
 
-# run_command "python3 coliee_to_sts_parser.py -p /app/data/COLIEE/task1_train_files_2024/ -l /app/data/COLIEE/task1_train_labels_2024.json -vo /app/data/COLIEE/train_vanilla_sentences.json -so /app/data/COLIEE/train_summarized_sentences.json" "coliee_to_sts_parser.py"
+# run_command "python3 coliee_to_sts_parser.py -p ./data/COLIEE/task1_train_files_2024/ -l ./data/COLIEE/task1_TRAIN_PAIRS_2024.json -vo ./data/COLIEE/train_vanilla_sentences.json -so ./data/COLIEE/train_summarized_sentences.json" "coliee_to_sts_parser.py"
 
-# run_command "python3 coliee_to_sts_parser.py -p /app/data/COLIEE/task1_test_files_2024/ -l /app/data/COLIEE/task1_test_labels_2024.json -vo /app/data/COLIEE/test_vanilla_sentences.json -so /app/data/COLIEE/test_summarized_sentences.json --test" "coliee_to_sts_parser.py (test)"
+# run_command "python3 coliee_to_sts_parser.py -p ./data/COLIEE/task1_test_files_2024/ -l ./data/COLIEE/task1_TEST_PAIRS_2024.json -vo ./data/COLIEE/test_vanilla_sentences.json -so ./data/COLIEE/test_summarized_sentences.json --test" "coliee_to_sts_parser.py (test)"
 
 # run_command "python3 train.py -c $FINETUNE_CONFIG -g 0" "train.py (finetune)"
 
-# run_command "sleep 10" "sleep (wait for finetune to finish)"
+# run_command "sleep 1" "sleep (wait for finetune to finish)"
 
-run_command "python3 poolout.py -c $POOLOUT_CONFIG -g $POOLOUT_GPU --checkpoint $BERT_CHECKPOINT --result $POOLOUT_RESULT" "poolout.py"
+# run_command "python3 poolout.py -c $POOLOUT_CONFIG -g $POOLOUT_GPU --checkpoint $BERT_CHECKPOINT --result $POOLOUT_RESULT" "poolout.py"
 
-run_command "sleep 10" "sleep (wait for poolout to finish)"
+# run_command "sleep 1" "sleep (wait for poolout to finish)"
 
-run_command "python3 poolout_to_train.py -in $TRAIN_LABELS -out $POOLOUT_RESULT --result $TRAIN_DATA" "poolout_to_train.py"
+# run_command "python3 poolout_to_train.py -in $TRAIN_PAIRS -out $POOLOUT_RESULT --result $TRAIN_DATA" "poolout_to_train.py"
 
-run_command "sleep 5" "sleep (wait for conversion to finish)"
+# run_command "sleep 1" "sleep (wait for conversion to finish)"
 
-run_command "python3 poolout.py -c $POOLOUT_TEST_CONFIG -g $POOLOUT_GPU --checkpoint $BERT_CHECKPOINT --result $POOLOUT_TEST_RESULT --test" "poolout.py"
+# run_command "python3 poolout.py -c $POOLOUT_TEST_CONFIG -g $POOLOUT_GPU --checkpoint $BERT_CHECKPOINT --result $POOLOUT_TEST_RESULT --test" "poolout.py"
 
-run_command "sleep 10" "sleep (wait for poolout to finish)"
+# run_command "sleep 1" "sleep (wait for poolout to finish)"
 
-run_command "python3 poolout_to_train.py -in $TEST_LABELS -out $POOLOUT_TEST_RESULT --result $TEST_DATA --test" "poolout_to_train.py"
+# run_command "python3 poolout_to_train.py -in $TEST_PAIRS -out $POOLOUT_TEST_RESULT --result $TEST_DATA --test" "poolout_to_train.py"
 
 # run_command "sleep 5" "sleep (wait for conversion to finish)"
 
@@ -111,9 +113,29 @@ run_command "python3 poolout_to_train.py -in $TEST_LABELS -out $POOLOUT_TEST_RES
 # run_command "python3 test.py -c $GRU_CONFIG -g $GRU_GPU --checkpoint $BEST_GRU_CHECKPOINT --result $GRU_RESULTS" "test.py (gru)"
 
 # run_command "sleep 5" "sleep (wait for conversion to finish)"
-  
+
 # run_command "python parse_results.py parse $GRU_RESULTS $PARSED_GRU_RESULTS" "parse_results.py (gru)"
 
 # run_command "python parse_results.py evaluate $TEST_LABELS $PARSED_GRU_RESULTS $GRU_METRICS" "parse_results.py (evaluate gru)"
+
+#### TRANSFORMER
+
+run_command "python3 train.py -c $TRANSFORMER_CONFIG -g $TRANSFORMER_GPU" "train.py (transformer)"
+
+run_command "sleep 5" "sleep (wait for training to finish)"
+
+TRANSFORMER_CHECKPOINT_DIR=$(dirname "$TRANSFORMER_CHECKPOINT")
+rm -f /tmp/transformer_eval_valid.json
+run_command "python3 eval_valid.py -c $TRANSFORMER_CONFIG -g $TRANSFORMER_GPU --checkpoint-dir $TRANSFORMER_CHECKPOINT_DIR --result /tmp/transformer_eval_valid.json" "eval_valid.py (transformer)"
+BEST_TRANSFORMER_CHECKPOINT=$(python3 -c "import json; res=json.load(open('/tmp/transformer_eval_valid.json'))['results']; print(max(res, key=lambda x: x['metrics']['f1'])['checkpoint'])")
+echo "Best Transformer checkpoint: $BEST_TRANSFORMER_CHECKPOINT"
+
+run_command "python3 test.py -c $TRANSFORMER_CONFIG -g $TRANSFORMER_GPU --checkpoint $BEST_TRANSFORMER_CHECKPOINT --result $TRANSFORMER_RESULTS" "test.py (transformer)"
+
+run_command "sleep 5" "sleep (wait for conversion to finish)"
+  
+run_command "python parse_results.py parse $TRANSFORMER_RESULTS $PARSED_TRANSFORMER_RESULTS" "parse_results.py (transformer)"
+
+run_command "python parse_results.py evaluate $TEST_LABELS $PARSED_TRANSFORMER_RESULTS $TRANSFORMER_METRICS" "parse_results.py (evaluate transformer)"
 
 echo "All commands succeeded"

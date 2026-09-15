@@ -161,35 +161,35 @@ def main():
         "--path",
         "-p",
         help="specific path",
-        default="/app/data/COLIEE/task1_train_files_2024/",
+        default="./data/COLIEE/task1_train_files_2024/",
         required=True,
     )
     parser.add_argument(
         "--labels",
         "-l",
         help="labels file path",
-        default="/app/data/COLIEE/task1_train_labels_2024.json",
+        default="./data/COLIEE/task1_train_labels_2024.json",
         required=True,
     )
     parser.add_argument(
         "--vanilla-output",
         "-vo",
         help="output file path for vanilla version",
-        default="/app/data/COLIEE/train_vanilla_sentences.json",
+        default="./data/COLIEE/train_vanilla_sentences.json",
         required=True,
     )
     parser.add_argument(
         "--sumy-output",
         "-so",
         help="output file path for sumy version",
-        default="/app/data/COLIEE/train_summarized_sentences.json",
+        default="./data/COLIEE/train_summarized_sentences.json",
         required=True,
     )
     parser.add_argument("--test", help="test mode", action="store_true")
     args = parser.parse_args()
 
     dataflow_tag = os.getenv("DATAFLOW_TAG", ProspectiveService.DEFAULT_DATAFLOW_TAG)
-    provenance = RetrospectiveService(dataflow_tag)
+    provenance = RetrospectiveService(dataflow_tag, bypass=True)
 
     if args.test:
 

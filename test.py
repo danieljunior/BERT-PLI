@@ -49,17 +49,27 @@ if __name__ == "__main__":
         logger.error("CUDA is not available but specific gpu id")
         raise NotImplementedError
     
+<<<<<<< HEAD
     # dataflow_tag = os.getenv('DATAFLOW_TAG', ProspectiveService.DEFAULT_DATAFLOW_TAG)
     # provenance = RetrospectiveService(dataflow_tag)
     # config_file = None
     # with open(configFilePath, 'r', encoding='utf-8') as f:
     #     config_file = f.read()
     # input_data = {ProspectiveService.DT_TEST_CONFIG: [[config_file, args.checkpoint]],}
+=======
+    dataflow_tag = os.getenv('DATAFLOW_TAG', ProspectiveService.DEFAULT_DATAFLOW_TAG)
+    provenance = RetrospectiveService(dataflow_tag, bypass=True)
+    config_file = None
+    with open(configFilePath, 'r', encoding='utf-8') as f:
+        config_file = f.read()
+    input_data = {ProspectiveService.DT_TEST_CONFIG: [[config_file, args.checkpoint]],}
+>>>>>>> 192e2c3cb3180c8917088cd525a0ca3d9a3e4de7
 
     # with provenance.get_retrospective_data(ProspectiveService.TF_TEST_CLASSIFIER, input_data) as result:
     if not os.path.exists(args.result):
         parameters = init_all(config, gpu_list, args.checkpoint, "test")
 
+<<<<<<< HEAD
         if config.getboolean('output', 'save_as_dict'):
             out_file = open(args.result, 'w', encoding='utf-8')
             outputs = test(parameters, config, gpu_list)
@@ -70,6 +80,21 @@ if __name__ == "__main__":
                 }
                 out_line = json.dumps(tmp_dict, ensure_ascii=False) + '\n'
                 out_file.write(out_line)
+=======
+            if config.getboolean('output', 'save_as_dict'):
+                out_file = open(args.result, 'w', encoding='utf-8')
+                outputs = test(parameters, config, gpu_list, heatmap=False)
+                for output in outputs:
+                    tmp_dict = {
+                        'id_': output[0],
+                        'res': output[1]
+                    }
+                    out_line = json.dumps(tmp_dict, ensure_ascii=False) + '\n'
+                    out_file.write(out_line)
+            else:
+                json.dump(test(parameters, config, gpu_list), open(args.result, "w", encoding="utf8"), ensure_ascii=False,
+                        sort_keys=True, indent=2)
+>>>>>>> 192e2c3cb3180c8917088cd525a0ca3d9a3e4de7
         else:
             json.dump(test(parameters, config, gpu_list), open(args.result, "w", encoding="utf8"), ensure_ascii=False,
                     sort_keys=True, indent=2)

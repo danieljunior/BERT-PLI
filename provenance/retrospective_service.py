@@ -18,11 +18,16 @@ if not logger.handlers:
     logger.setLevel(logging.INFO)
 
 class RetrospectiveService:
-    def __init__(self, dataflow_tag : str):
+    def __init__(self, dataflow_tag : str, bypass : bool = False):
         self.dataflow_tag = dataflow_tag
-        self.dfanalyzer_service = DfanalyzerService()
+        self.bypass = bypass
+        if self.bypass:
+            logger.warning(f"Bypass mode enabled: RetrospectiveService will not record provenance data for dataflow '{dataflow_tag}'")
+            return
+
+        self.dfanalyzer_service = DfanalyzerService(bypass=bypass)
         self.persistence_service = PersistenceService(dataflow_tag)
-        
+
         if not self.dfanalyzer_service.dataflow_exists(self.dataflow_tag):
             self.prospective_service = ProspectiveService(self.dataflow_tag, self.persistence_service)
             self.dataflow = self.prospective_service.build_dataflow()
@@ -33,6 +38,10 @@ class RetrospectiveService:
     @contextmanager
     def get_retrospective_data(self, task_name:str, input_data:dict):
         """Context manager for retrospective data retrieval"""
+        if self.bypass:
+            logger.warning(f"Bypass mode enabled: Skipping retrospective data recording for task '{task_name}'")
+            yield {}
+            return
         try:
             # LOG INPUT DATA RECORDING
             logger.info(f"[{task_name}] Starting task with input data: {input_data}")

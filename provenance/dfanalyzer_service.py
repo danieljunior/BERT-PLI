@@ -19,6 +19,9 @@ class DfanalyzerService:
         self.bypass = bypass
     
     def get_monet_connection(self):
+        if self.bypass: 
+            return None
+
         if pymonetdb is None:
             raise ModuleNotFoundError(
                 "pymonetdb is required to connect to MonetDB. "

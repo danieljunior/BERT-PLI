@@ -80,7 +80,7 @@ def extract_attention_transformer(model, data):
     # Assumimos que a arquitetura padrão usa model.transformer (que é TransformerEncoder)
     # e dentro possui layers
     hooks = []
-    for layer in model.transformer.layers:
+    for layer in model.transformer.module.layers:
         h = layer.self_attn.register_forward_hook(hook_fn)
         hooks.append(h)
     
