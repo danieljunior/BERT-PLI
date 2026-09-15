@@ -7,7 +7,7 @@ Esta pasta reúne a documentação técnica, manuais de uso e relatórios analí
 ## 1. Índice de Documentos
 
 - [`mcnemar_analysis_report.md`](file:///home/danieljunior/workspace/BERT-PLI-IJCAI2020/docs/mcnemar_analysis_report.md): **Relatório da Análise Estatística Pareada (McNemar Test)**. Contém os resultados das 108 comparações par a par entre os modelos (`v1`, `v2`, `v3` nas abordagens `paragraph`, `summarized` e `vanilla`) calculadas sobre os arquivos `*_parsed_results.json`.
-- [`attention_summary_guide.md`](file:///home/danieljunior/workspace/BERT-PLI-IJCAI2020/docs/attention_summary_guide.md): **Guia de Sumarização Quantitativa de Atenção**. Documentação completa do script [`attention_summary.py`](file:///home/danieljunior/workspace/BERT-PLI-IJCAI2020/attention_summary.py), contendo fórmulas matemáticas (entropia, peso máximo, argmax, concentração top-$K$, Gini), parâmetros CLI e especificação dos arquivos de saída.
+- [`attention_summary_guide.md`](file:///home/danieljunior/workspace/BERT-PLI-IJCAI2020/docs/attention_summary_guide.md): **Guia de Sumarização Quantitativa de Atenção para Predições Divergentes**. Documentação do script [`attention_summary.py`](file:///home/danieljunior/workspace/BERT-PLI-IJCAI2020/attention_summary.py) e módulos [`attention_metrics.py`](file:///home/danieljunior/workspace/BERT-PLI-IJCAI2020/attention_metrics.py) / [`divergent_subset_loader.py`](file:///home/danieljunior/workspace/BERT-PLI-IJCAI2020/divergent_subset_loader.py), detalhando o processamento sobre os mesmos dados de [`attention_divergent_predictions.py`](file:///home/danieljunior/workspace/BERT-PLI-IJCAI2020/attention_divergent_predictions.py) com os parâmetros `-ev` e `--type`.
 
 ---
 
@@ -25,24 +25,26 @@ Esta pasta reúne a documentação técnica, manuais de uso e relatórios analí
 
 ---
 
-### 2.2. Sumário Quantitativo de Atenção (`attention_summary.py`)
-- **Arquivo**: [`attention_summary.py`](file:///home/danieljunior/workspace/BERT-PLI-IJCAI2020/attention_summary.py)
+### 2.2. Sumário Quantitativo de Atenção Divergente (`attention_summary.py`)
+- **Arquivo Principal**: [`attention_summary.py`](file:///home/danieljunior/workspace/BERT-PLI-IJCAI2020/attention_summary.py)
+- **Módulos Auxiliares**: [`attention_metrics.py`](file:///home/danieljunior/workspace/BERT-PLI-IJCAI2020/attention_metrics.py), [`divergent_subset_loader.py`](file:///home/danieljunior/workspace/BERT-PLI-IJCAI2020/divergent_subset_loader.py)
 - **Modelos Suportados**: AttenRNN (`GRU` e `LSTM`)
-- **Descrição**: Seleciona dinamicamente o melhor checkpoint a partir das métricas de validação (`run_best_model.py`), processa o conjunto de teste completo e extrai métricas quantitativas dos pesos de atenção ($H$, $\max w_i$, $\arg\max w_i$, Top-$K$, Gini).
+- **Parâmetros**:
+  - `--experiment-version` / `-ev`: Versão dos experimentos (`v1`, `v2`, `v3`).
+  - `--type` / `-t`: Tipo de divergência (`intra` para variantes de segmentação ou `inter` para arquiteturas).
 - **Execução**:
   ```bash
-  python3 attention_summary.py \
-      --config config/nlp/divergent/vanilla_gru.config \
-      --metrics output/results/vanilla/v1_attengru_valid_metrics.json \
-      --ground_truth data/COLIEE/task1_test_labels_2024.json \
-      --output output/attention_stats/vanilla_gru \
-      --plots
+  # Modo intra-modelo
+  python3 attention_summary.py --experiment-version v1 --type intra --plots
+
+  # Modo inter-modelo
+  python3 attention_summary.py --experiment-version v1 --type inter --plots
   ```
-- **Saída**: `pair_stats.csv`, `aggregate_stats.json` e gráficos PNG em `/histograms`.
+- **Saída**: Diretórios estruturados em `output/results/divergent/{experiment_version}/{type}/{variant}_{model}/` contendo `pair_stats.csv`, `aggregate_stats.json` e `/histograms`.
 
 ---
 
 ## 3. Ambientes e Requisitos
 
 - **Ambiente Isolado**: Os pacotes do teste estatístico estão isolados no ambiente `.venv_mcnemar` e salvos em [`requirements_mcnemar.txt`](file:///home/danieljunior/workspace/BERT-PLI-IJCAI2020/requirements_mcnemar.txt).
-- **Preservação de Código**: Os arquivos originais [`requirements.txt`](file:///home/danieljunior/workspace/BERT-PLI-IJCAI2020/requirements.txt) e [`extract_attention.py`](file:///home/danieljunior/workspace/BERT-PLI-IJCAI2020/extract_attention.py) foram estritamente preservados sem alterações.
+- **Testes Unitários**: Testes automatizados cobrindo métricas numéricas e carregadores divergentes em [`tests/test_attention_summary.py`](file:///home/danieljunior/workspace/BERT-PLI-IJCAI2020/tests/test_attention_summary.py).
