@@ -261,7 +261,7 @@ def main():
         checkpoint_dir = None
 
     first_epoch, first_path = checkpoints[0]
-    parameters = init_all(config, gpu_list, first_path, "train")
+    parameters = init_all(config, gpu_list, first_path, "valid")
     model = parameters["model"]
     valid_dataset = parameters["valid_dataset"]
     output_function = parameters["output_function"]

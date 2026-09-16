@@ -2,7 +2,7 @@ import logging
 import torch
 import os
 
-from reader.reader import init_dataset, init_formatter, init_test_dataset
+from reader.reader import init_dataset, init_formatter, init_one_dataset, init_test_dataset
 from model import get_model
 from model.optimizer import init_optimizer
 from .output_init import init_output_function
@@ -18,6 +18,9 @@ def init_all(config, gpu_list, checkpoint, mode, *args, **params):
     if mode == "train":
         init_formatter(config, ["train", "valid"], *args, **params)
         result["train_dataset"], result["valid_dataset"] = init_dataset(config, *args, **params)
+    elif mode == "valid":
+        init_formatter(config, ["valid"], *args, **params)
+        result["valid_dataset"] = init_one_dataset(config, 'valid', *args, **params)
     else:
         init_formatter(config, ["test"], *args, **params)
         result["test_dataset"] = init_test_dataset(config, *args, **params)
@@ -63,7 +66,7 @@ def init_all(config, gpu_list, checkpoint, mode, *args, **params):
             logger.warning(information)
 
     result["model"] = model
-    if mode == "train":
+    if mode == "train" or mode == "valid":
         result["optimizer"] = optimizer
         result["trained_epoch"] = trained_epoch
         result["output_function"] = init_output_function(config)

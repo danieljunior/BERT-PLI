@@ -1,0 +1,595 @@
+{
+  "checkpoint_dir": "output/checkpoints/vanilla/v3_attenlstm",
+  "results": [
+    {
+      "checkpoint": "output/checkpoints/vanilla/v3_attenlstm/1.pkl",
+      "epoch": 1,
+      "metrics": {
+        "f1": 0.6970139903946544,
+        "loss": 0.661294459990966,
+        "precision": 1.0,
+        "recall": 0.5349358974358974
+      }
+    },
+    {
+      "checkpoint": "output/checkpoints/vanilla/v3_attenlstm/2.pkl",
+      "epoch": 2,
+      "metrics": {
+        "f1": 0.692919983242564,
+        "loss": 0.6455468226701785,
+        "precision": 1.0,
+        "recall": 0.5301282051282051
+      }
+    },
+    {
+      "checkpoint": "output/checkpoints/vanilla/v3_attenlstm/3.pkl",
+      "epoch": 3,
+      "metrics": {
+        "f1": 0.46908734052993134,
+        "loss": 0.6132828880579043,
+        "precision": 1.0,
+        "recall": 0.30641025641025643
+      }
+    },
+    {
+      "checkpoint": "output/checkpoints/vanilla/v3_attenlstm/4.pkl",
+      "epoch": 4,
+      "metrics": {
+        "f1": 0.6972860125260961,
+        "loss": 0.5515212989006287,
+        "precision": 1.0,
+        "recall": 0.5352564102564102
+      }
+    },
+    {
+      "checkpoint": "output/checkpoints/vanilla/v3_attenlstm/5.pkl",
+      "epoch": 5,
+      "metrics": {
+        "f1": 0.7355623100303952,
+        "loss": 0.5411604311221685,
+        "precision": 1.0,
+        "recall": 0.5817307692307693
+      }
+    },
+    {
+      "checkpoint": "output/checkpoints/vanilla/v3_attenlstm/6.pkl",
+      "epoch": 6,
+      "metrics": {
+        "f1": 0.6136414130193291,
+        "loss": 0.5380365464931879,
+        "precision": 1.0,
+        "recall": 0.4426282051282051
+      }
+    },
+    {
+      "checkpoint": "output/checkpoints/vanilla/v3_attenlstm/7.pkl",
+      "epoch": 7,
+      "metrics": {
+        "f1": 0.7173689619732785,
+        "loss": 0.5248216528923083,
+        "precision": 1.0,
+        "recall": 0.5592948717948718
+      }
+    },
+    {
+      "checkpoint": "output/checkpoints/vanilla/v3_attenlstm/8.pkl",
+      "epoch": 8,
+      "metrics": {
+        "f1": 0.5532112218873174,
+        "loss": 0.5360208238546665,
+        "precision": 1.0,
+        "recall": 0.38237179487179485
+      }
+    },
+    {
+      "checkpoint": "output/checkpoints/vanilla/v3_attenlstm/9.pkl",
+      "epoch": 9,
+      "metrics": {
+        "f1": 0.6065207682000894,
+        "loss": 0.5432308078576357,
+        "precision": 1.0,
+        "recall": 0.43525641025641026
+      }
+    },
+    {
+      "checkpoint": "output/checkpoints/vanilla/v3_attenlstm/10.pkl",
+      "epoch": 10,
+      "metrics": {
+        "f1": 0.623731804146449,
+        "loss": 0.5221232555997677,
+        "precision": 1.0,
+        "recall": 0.4532051282051282
+      }
+    },
+    {
+      "checkpoint": "output/checkpoints/vanilla/v3_attenlstm/11.pkl",
+      "epoch": 11,
+      "metrics": {
+        "f1": 0.5740402193784279,
+        "loss": 0.5349233577648799,
+        "precision": 1.0,
+        "recall": 0.4025641025641026
+      }
+    },
+    {
+      "checkpoint": "output/checkpoints/vanilla/v3_attenlstm/12.pkl",
+      "epoch": 12,
+      "metrics": {
+        "f1": 0.7192118226600985,
+        "loss": 0.5362134747016124,
+        "precision": 1.0,
+        "recall": 0.5615384615384615
+      }
+    },
+    {
+      "checkpoint": "output/checkpoints/vanilla/v3_attenlstm/13.pkl",
+      "epoch": 13,
+      "metrics": {
+        "f1": 0.5057471264367815,
+        "loss": 0.5508289914100598,
+        "precision": 1.0,
+        "recall": 0.3384615384615385
+      }
+    },
+    {
+      "checkpoint": "output/checkpoints/vanilla/v3_attenlstm/14.pkl",
+      "epoch": 14,
+      "metrics": {
+        "f1": 0.6225165562913908,
+        "loss": 0.5338944646792534,
+        "precision": 1.0,
+        "recall": 0.4519230769230769
+      }
+    },
+    {
+      "checkpoint": "output/checkpoints/vanilla/v3_attenlstm/15.pkl",
+      "epoch": 15,
+      "metrics": {
+        "f1": 0.39340885684860966,
+        "loss": 0.5927452708666141,
+        "precision": 1.0,
+        "recall": 0.24487179487179486
+      }
+    },
+    {
+      "checkpoint": "output/checkpoints/vanilla/v3_attenlstm/16.pkl",
+      "epoch": 16,
+      "metrics": {
+        "f1": 0.6414108425865448,
+        "loss": 0.5263429203858743,
+        "precision": 1.0,
+        "recall": 0.4721153846153846
+      }
+    },
+    {
+      "checkpoint": "output/checkpoints/vanilla/v3_attenlstm/17.pkl",
+      "epoch": 17,
+      "metrics": {
+        "f1": 0.6443623723658484,
+        "loss": 0.5235412650383435,
+        "precision": 1.0,
+        "recall": 0.4753205128205128
+      }
+    },
+    {
+      "checkpoint": "output/checkpoints/vanilla/v3_attenlstm/18.pkl",
+      "epoch": 18,
+      "metrics": {
+        "f1": 0.543757292882147,
+        "loss": 0.5353747682311596,
+        "precision": 1.0,
+        "recall": 0.3733974358974359
+      }
+    },
+    {
+      "checkpoint": "output/checkpoints/vanilla/v3_attenlstm/19.pkl",
+      "epoch": 19,
+      "metrics": {
+        "f1": 0.5139318885448917,
+        "loss": 0.552142470349104,
+        "precision": 1.0,
+        "recall": 0.3458333333333333
+      }
+    },
+    {
+      "checkpoint": "output/checkpoints/vanilla/v3_attenlstm/20.pkl",
+      "epoch": 20,
+      "metrics": {
+        "f1": 0.4872727272727273,
+        "loss": 0.5609698448425684,
+        "precision": 1.0,
+        "recall": 0.32211538461538464
+      }
+    },
+    {
+      "checkpoint": "output/checkpoints/vanilla/v3_attenlstm/21.pkl",
+      "epoch": 21,
+      "metrics": {
+        "f1": 0.5209765347238682,
+        "loss": 0.5508637264752999,
+        "precision": 1.0,
+        "recall": 0.35224358974358977
+      }
+    },
+    {
+      "checkpoint": "output/checkpoints/vanilla/v3_attenlstm/22.pkl",
+      "epoch": 22,
+      "metrics": {
+        "f1": 0.6589297227595099,
+        "loss": 0.5346093759704859,
+        "precision": 1.0,
+        "recall": 0.4913461538461538
+      }
+    },
+    {
+      "checkpoint": "output/checkpoints/vanilla/v3_attenlstm/23.pkl",
+      "epoch": 23,
+      "metrics": {
+        "f1": 0.6937408415323424,
+        "loss": 0.5119150458238064,
+        "precision": 1.0,
+        "recall": 0.5310897435897436
+      }
+    },
+    {
+      "checkpoint": "output/checkpoints/vanilla/v3_attenlstm/24.pkl",
+      "epoch": 24,
+      "metrics": {
+        "f1": 0.6018373291507955,
+        "loss": 0.5235889776394917,
+        "precision": 1.0,
+        "recall": 0.430448717948718
+      }
+    },
+    {
+      "checkpoint": "output/checkpoints/vanilla/v3_attenlstm/25.pkl",
+      "epoch": 25,
+      "metrics": {
+        "f1": 0.5971223021582733,
+        "loss": 0.5295792403129431,
+        "precision": 1.0,
+        "recall": 0.4256410256410256
+      }
+    },
+    {
+      "checkpoint": "output/checkpoints/vanilla/v3_attenlstm/26.pkl",
+      "epoch": 26,
+      "metrics": {
+        "f1": 0.48983543078412395,
+        "loss": 0.5825219343105952,
+        "precision": 1.0,
+        "recall": 0.3243589743589744
+      }
+    },
+    {
+      "checkpoint": "output/checkpoints/vanilla/v3_attenlstm/27.pkl",
+      "epoch": 27,
+      "metrics": {
+        "f1": 0.4750733137829912,
+        "loss": 0.5731334037123582,
+        "precision": 1.0,
+        "recall": 0.31153846153846154
+      }
+    },
+    {
+      "checkpoint": "output/checkpoints/vanilla/v3_attenlstm/28.pkl",
+      "epoch": 28,
+      "metrics": {
+        "f1": 0.6058981233243967,
+        "loss": 0.5295760836356725,
+        "precision": 1.0,
+        "recall": 0.4346153846153846
+      }
+    },
+    {
+      "checkpoint": "output/checkpoints/vanilla/v3_attenlstm/29.pkl",
+      "epoch": 29,
+      "metrics": {
+        "f1": 0.6133333333333333,
+        "loss": 0.5379709827594268,
+        "precision": 1.0,
+        "recall": 0.4423076923076923
+      }
+    },
+    {
+      "checkpoint": "output/checkpoints/vanilla/v3_attenlstm/30.pkl",
+      "epoch": 30,
+      "metrics": {
+        "f1": 0.49602313810556764,
+        "loss": 0.5662107158165711,
+        "precision": 1.0,
+        "recall": 0.3298076923076923
+      }
+    },
+    {
+      "checkpoint": "output/checkpoints/vanilla/v3_attenlstm/31.pkl",
+      "epoch": 31,
+      "metrics": {
+        "f1": 0.5046728971962617,
+        "loss": 0.5725389366348584,
+        "precision": 1.0,
+        "recall": 0.3375
+      }
+    },
+    {
+      "checkpoint": "output/checkpoints/vanilla/v3_attenlstm/32.pkl",
+      "epoch": 32,
+      "metrics": {
+        "f1": 0.425832492431887,
+        "loss": 0.6114723907831388,
+        "precision": 1.0,
+        "recall": 0.2705128205128205
+      }
+    },
+    {
+      "checkpoint": "output/checkpoints/vanilla/v3_attenlstm/33.pkl",
+      "epoch": 33,
+      "metrics": {
+        "f1": 0.5272598536700496,
+        "loss": 0.5608028415686045,
+        "precision": 1.0,
+        "recall": 0.3580128205128205
+      }
+    },
+    {
+      "checkpoint": "output/checkpoints/vanilla/v3_attenlstm/34.pkl",
+      "epoch": 34,
+      "metrics": {
+        "f1": 0.5481619357840856,
+        "loss": 0.5732024057935445,
+        "precision": 1.0,
+        "recall": 0.37756410256410255
+      }
+    },
+    {
+      "checkpoint": "output/checkpoints/vanilla/v3_attenlstm/35.pkl",
+      "epoch": 35,
+      "metrics": {
+        "f1": 0.6964696051806977,
+        "loss": 0.5419514478781284,
+        "precision": 1.0,
+        "recall": 0.5342948717948718
+      }
+    },
+    {
+      "checkpoint": "output/checkpoints/vanilla/v3_attenlstm/36.pkl",
+      "epoch": 36,
+      "metrics": {
+        "f1": 0.6324786324786326,
+        "loss": 0.5328133021027613,
+        "precision": 1.0,
+        "recall": 0.4625
+      }
+    },
+    {
+      "checkpoint": "output/checkpoints/vanilla/v3_attenlstm/37.pkl",
+      "epoch": 37,
+      "metrics": {
+        "f1": 0.6411149825783972,
+        "loss": 0.5632785958739427,
+        "precision": 1.0,
+        "recall": 0.4717948717948718
+      }
+    },
+    {
+      "checkpoint": "output/checkpoints/vanilla/v3_attenlstm/38.pkl",
+      "epoch": 38,
+      "metrics": {
+        "f1": 0.6330777656078862,
+        "loss": 0.5511581781965036,
+        "precision": 1.0,
+        "recall": 0.46314102564102566
+      }
+    },
+    {
+      "checkpoint": "output/checkpoints/vanilla/v3_attenlstm/39.pkl",
+      "epoch": 39,
+      "metrics": {
+        "f1": 0.6425929954318034,
+        "loss": 0.5478735943635304,
+        "precision": 1.0,
+        "recall": 0.4733974358974359
+      }
+    },
+    {
+      "checkpoint": "output/checkpoints/vanilla/v3_attenlstm/40.pkl",
+      "epoch": 40,
+      "metrics": {
+        "f1": 0.5707741639945031,
+        "loss": 0.5771183067407364,
+        "precision": 1.0,
+        "recall": 0.3993589743589744
+      }
+    },
+    {
+      "checkpoint": "output/checkpoints/vanilla/v3_attenlstm/41.pkl",
+      "epoch": 41,
+      "metrics": {
+        "f1": 0.66524064171123,
+        "loss": 0.5399854515607541,
+        "precision": 1.0,
+        "recall": 0.4983974358974359
+      }
+    },
+    {
+      "checkpoint": "output/checkpoints/vanilla/v3_attenlstm/42.pkl",
+      "epoch": 42,
+      "metrics": {
+        "f1": 0.39671120246659813,
+        "loss": 0.6562796840491968,
+        "precision": 1.0,
+        "recall": 0.24743589743589745
+      }
+    },
+    {
+      "checkpoint": "output/checkpoints/vanilla/v3_attenlstm/43.pkl",
+      "epoch": 43,
+      "metrics": {
+        "f1": 0.6145648312611012,
+        "loss": 0.5437047344369766,
+        "precision": 1.0,
+        "recall": 0.44358974358974357
+      }
+    },
+    {
+      "checkpoint": "output/checkpoints/vanilla/v3_attenlstm/44.pkl",
+      "epoch": 44,
+      "metrics": {
+        "f1": 0.5379568884723525,
+        "loss": 0.5745124524220442,
+        "precision": 1.0,
+        "recall": 0.367948717948718
+      }
+    },
+    {
+      "checkpoint": "output/checkpoints/vanilla/v3_attenlstm/45.pkl",
+      "epoch": 45,
+      "metrics": {
+        "f1": 0.656041352573767,
+        "loss": 0.539422091612449,
+        "precision": 1.0,
+        "recall": 0.4881410256410256
+      }
+    },
+    {
+      "checkpoint": "output/checkpoints/vanilla/v3_attenlstm/46.pkl",
+      "epoch": 46,
+      "metrics": {
+        "f1": 0.5678218957998623,
+        "loss": 0.5513493979206452,
+        "precision": 1.0,
+        "recall": 0.39647435897435895
+      }
+    },
+    {
+      "checkpoint": "output/checkpoints/vanilla/v3_attenlstm/47.pkl",
+      "epoch": 47,
+      "metrics": {
+        "f1": 0.62129916040654,
+        "loss": 0.5411545074138886,
+        "precision": 1.0,
+        "recall": 0.45064102564102565
+      }
+    },
+    {
+      "checkpoint": "output/checkpoints/vanilla/v3_attenlstm/48.pkl",
+      "epoch": 48,
+      "metrics": {
+        "f1": 0.45468053491827637,
+        "loss": 0.6155202112327783,
+        "precision": 1.0,
+        "recall": 0.29423076923076924
+      }
+    },
+    {
+      "checkpoint": "output/checkpoints/vanilla/v3_attenlstm/49.pkl",
+      "epoch": 49,
+      "metrics": {
+        "f1": 0.6857624262847516,
+        "loss": 0.5623372355332741,
+        "precision": 1.0,
+        "recall": 0.5217948717948718
+      }
+    },
+    {
+      "checkpoint": "output/checkpoints/vanilla/v3_attenlstm/50.pkl",
+      "epoch": 50,
+      "metrics": {
+        "f1": 0.6390403489640132,
+        "loss": 0.5614319254954656,
+        "precision": 1.0,
+        "recall": 0.46955128205128205
+      }
+    },
+    {
+      "checkpoint": "output/checkpoints/vanilla/v3_attenlstm/51.pkl",
+      "epoch": 51,
+      "metrics": {
+        "f1": 0.6934673366834171,
+        "loss": 0.5531841028577242,
+        "precision": 1.0,
+        "recall": 0.5307692307692308
+      }
+    },
+    {
+      "checkpoint": "output/checkpoints/vanilla/v3_attenlstm/52.pkl",
+      "epoch": 52,
+      "metrics": {
+        "f1": 0.6276665933582583,
+        "loss": 0.5866950041590593,
+        "precision": 1.0,
+        "recall": 0.45737179487179486
+      }
+    },
+    {
+      "checkpoint": "output/checkpoints/vanilla/v3_attenlstm/53.pkl",
+      "epoch": 53,
+      "metrics": {
+        "f1": 0.6508108108108108,
+        "loss": 0.5647756076776065,
+        "precision": 1.0,
+        "recall": 0.4823717948717949
+      }
+    },
+    {
+      "checkpoint": "output/checkpoints/vanilla/v3_attenlstm/54.pkl",
+      "epoch": 54,
+      "metrics": {
+        "f1": 0.6632390745501285,
+        "loss": 0.5620762376449047,
+        "precision": 1.0,
+        "recall": 0.49615384615384617
+      }
+    },
+    {
+      "checkpoint": "output/checkpoints/vanilla/v3_attenlstm/55.pkl",
+      "epoch": 55,
+      "metrics": {
+        "f1": 0.5891928555279222,
+        "loss": 0.5885714866029911,
+        "precision": 1.0,
+        "recall": 0.41762820512820514
+      }
+    },
+    {
+      "checkpoint": "output/checkpoints/vanilla/v3_attenlstm/56.pkl",
+      "epoch": 56,
+      "metrics": {
+        "f1": 0.7299002646041115,
+        "loss": 0.5854266168215336,
+        "precision": 1.0,
+        "recall": 0.5746794871794871
+      }
+    },
+    {
+      "checkpoint": "output/checkpoints/vanilla/v3_attenlstm/57.pkl",
+      "epoch": 57,
+      "metrics": {
+        "f1": 0.6754404585013797,
+        "loss": 0.5656310981664903,
+        "precision": 1.0,
+        "recall": 0.5099358974358974
+      }
+    },
+    {
+      "checkpoint": "output/checkpoints/vanilla/v3_attenlstm/58.pkl",
+      "epoch": 58,
+      "metrics": {
+        "f1": 0.5655172413793104,
+        "loss": 0.5805316877670778,
+        "precision": 1.0,
+        "recall": 0.3942307692307692
+      }
+    },
+    {
+      "checkpoint": "output/checkpoints/vanilla/v3_attenlstm/59.pkl",
+      "epoch": 59,
+      "metrics": {
+        "f1": 0.5542168674698795,
+        "loss": 0.6043611434598763,
+        "precision": 1.0,
+        "recall": 0.38333333333333336
+      }
+    }
+  ]
+}

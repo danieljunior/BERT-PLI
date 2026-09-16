@@ -59,9 +59,9 @@ def resolve_validation_metrics_file(
 ) -> str:
     """Find valid metrics JSON path for a given variant, model, and version."""
     candidate_paths = [
-        f"output/results/{variant}/{version}_atten{model_name}_valid_metrics.json",
-        f"output/results/v1/{variant}/{version}_atten{model_name}_valid_metrics.json",
-        f"output/results/{variant}/{version}_{model_name}_metrics.json",
+        f"output/results/{variant}/{version}_atten{model_name.lower()}_valid_metrics.json",
+        f"output/results/v1/{variant}/{version}_atten{model_name.lower()}_valid_metrics.json",
+        f"output/results/{variant}/{version}_{model_name.lower()}_metrics.json",
     ]
     for path_str in candidate_paths:
         if os.path.isfile(path_str):
@@ -316,6 +316,10 @@ def process_single_divergent_evaluation(
     config_path = f"config/nlp/divergent/{variant.lower()}_{model_name.lower()}.config"
     metrics_path = resolve_validation_metrics_file(variant, model_name, experiment_ver)
     checkpoint_path = resolve_best_checkpoint_file(metrics_path, path_prefix)
+    if experiment_ver not in checkpoint_path:
+        checkpoint_path = checkpoint_path.replace(
+            f"atten{model_name.lower()}", f"{experiment_ver}_atten{model_name.lower()}"
+        )
     config = create_config(config_path)
     print(f"[*] Variant: {variant}, Model: {model_name}, Ckpt: {checkpoint_path}")
     parameters = init_all(config, gpu_list, checkpoint_path, "test")
