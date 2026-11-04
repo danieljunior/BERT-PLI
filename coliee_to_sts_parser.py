@@ -1,5 +1,6 @@
 import os
 import json
+import re
 from pathlib import Path
 import random
 
@@ -28,6 +29,17 @@ def read_text_file(file_path):
         return f.read().strip()
 
 
+def split_numbered_paragraphs(file_path):
+    """Split a document at numbered paragraph markers such as [31]."""
+    text = read_text_file(file_path)
+    paragraphs = re.split(r"(?=\[\d+\])", text)
+    return [
+        re.sub(r"^\[\d+\]\s*", "", paragraph).strip()
+        for paragraph in paragraphs
+        if paragraph.strip()
+    ]
+
+
 def generate_negative_pairs(labels, files):
     """Generate negative examples by randomly pairing documents"""
     negative_pairs = []
@@ -46,6 +58,66 @@ def generate_negative_pairs(labels, files):
 
     return negative_pairs
 
+def paragraphs_processor(files_path, output_file_vanilla, output_file_paragraph):
+    positive_pairs = []
+    negative_pairs = []
+    with open(output_file_vanilla, "r", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            row = json.loads(line)
+            q_file = row["guid"].split("_")[0] + ".txt"
+            p_file = row["guid"].split("_")[1] + ".txt"
+            label = row["label"]
+            if label == 1:
+                positive_pairs.append((q_file, p_file))
+            else:
+                negative_pairs.append((q_file, p_file))
+
+    positive_pairs_set = set(positive_pairs)
+    all_pairs = positive_pairs + negative_pairs
+
+    ray.init(num_cpus=2, ignore_reinit_error=True, _temp_dir="/tmp/ray")
+
+    @ray.remote
+    def paragraph_process_pair(q_file, p_file, files_path, positive_pairs_set):
+        q_paragraphs = split_numbered_paragraphs(f"{files_path}/{q_file}")
+        p_paragraphs = split_numbered_paragraphs(f"{files_path}/{p_file}")
+
+        entry = {
+            "guid": f"{q_file.split('.')[0]}_{p_file.split('.')[0]}",
+            "q_paras": q_paragraphs,
+            "c_paras": p_paragraphs,
+            "label": 1 if (q_file, p_file) in positive_pairs_set else 0,
+        }
+        return entry
+
+    batch_size = 10
+    paragraph_data = []
+
+    for i in tqdm(range(0, len(all_pairs), batch_size), desc="Batching Ray tasks"):
+        batch = all_pairs[i : i + batch_size]
+
+        paragraph_futures = []
+
+        for q_file, p_file in tqdm(batch, desc="Dispatching Ray tasks", leave=False):
+            paragraph_futures.append(
+                paragraph_process_pair.remote(q_file, p_file, files_path, positive_pairs_set)
+            )
+
+        paragraph_data.extend(ray.get(paragraph_futures))
+
+    with open(output_file_paragraph, "w", encoding="utf-8") as f:
+        for entry in paragraph_data:
+            f.write(json.dumps(entry, ensure_ascii=False) + "\n")
+    return
+
+def process_files(files_path, labels_file, output_file_vanilla, output_file_sumy, output_file_paragraph):
+
+    # If vanilla output already exists, process it to generate paragraphs output and return
+    if os.path.exists(output_file_vanilla):
+        return paragraphs_processor(files_path, output_file_vanilla, output_file_paragraph)
 
 def process_files(files_path, labels_file, output_file_vanilla, output_file_sumy):
     # Read labels file
@@ -188,30 +260,30 @@ def main():
     parser.add_argument("--test", help="test mode", action="store_true")
     args = parser.parse_args()
 
-    dataflow_tag = os.getenv("DATAFLOW_TAG", ProspectiveService.DEFAULT_DATAFLOW_TAG)
-    provenance = RetrospectiveService(dataflow_tag, bypass=True)
+    # dataflow_tag = os.getenv("DATAFLOW_TAG", ProspectiveService.DEFAULT_DATAFLOW_TAG)
+    # provenance = RetrospectiveService(dataflow_tag, bypass=True)
 
-    if args.test:
+    # if args.test:
 
-        mode = "test"
-        task = ProspectiveService.TF_TEST_PARSE_COLIEE_DATASET
-        dataset = ProspectiveService.DT_TEST_COLIEE_DATASET
-        result_key = ProspectiveService.DT_TEST_COLIEE_PARSED_DATASET
+    #     mode = "test"
+    #     task = ProspectiveService.TF_test_PARSE_COLIEE_DATASET
+    #     dataset = ProspectiveService.DT_test_COLIEE_DATASET
+    #     result_key = ProspectiveService.DT_test_COLIEE_PARSED_DATASET
+    # else:
+    #     mode = "test"
+    #     task = ProspectiveService.TF_test_PARSE_COLIEE_DATASET
+    #     dataset = ProspectiveService.DT_test_COLIEE_DATASET
+    #     result_key = ProspectiveService.DT_test_COLIEE_PARSED_DATASET
+
+    # input_data = {dataset: [[args.path, args.labels, mode]]}
+    # with provenance.get_retrospective_data(task, input_data) as result:
+    if not os.path.exists(args.vanilla_output) and not os.path.exists(args.sumy_output):
+        print("Processing files...")
+        process_files(args.path, args.labels, args.vanilla_output, args.sumy_output)
     else:
-        mode = "train"
-        task = ProspectiveService.TF_TRAIN_PARSE_COLIEE_DATASET
-        dataset = ProspectiveService.DT_TRAIN_COLIEE_DATASET
-        result_key = ProspectiveService.DT_TRAIN_COLIEE_PARSED_DATASET
+        print(f"Output files already exist. Exiting.")
 
-    input_data = {dataset: [[args.path, args.labels, mode]]}
-    with provenance.get_retrospective_data(task, input_data) as result:
-        if not os.path.exists(args.vanilla_output) and not os.path.exists(args.sumy_output):
-            print("Processing files...")
-            process_files(args.path, args.labels, args.vanilla_output, args.sumy_output)
-        else:
-            print(f"Output files already exist. Exiting.")
-
-        result[result_key] = [[args.vanilla_output, args.sumy_output, mode]]
+        # result[result_key] = [[args.vanilla_output, args.sumy_output, mode]]
 
 
 if __name__ == "__main__":

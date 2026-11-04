@@ -1,13 +1,13 @@
-torch
+# torch
 tqdm==4.66.4
-transformers==4.42.4
+# transformers==4.42.4
 tokenizers==0.19.1
 sentencepiece==0.2.0
 numpy==1.26.4
-tensorboardX==2.6.2.2
+# tensorboardX==2.6.2.2
 typing-extensions==4.12.2
 sumy==0.11.0
-pymonetdb==1.9.0
+# pymonetdb==1.9.0
 matplotlib
 seaborn
 ray
