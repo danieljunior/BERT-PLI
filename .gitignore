@@ -1,13 +1,12 @@
+run_m3_to_m2.sh
 knowledge_base/
 bert-pli/
+output/
 dumps/
 temp
 notebook
-result/divergent
-**/**/*poolout*.json
-output/checkpoints/
-output/tensorboard/
 data/
+.venv/
 support/.venv
 qdrant/
 backup_qdrant/
